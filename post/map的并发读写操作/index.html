@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>Map的并发读写操作 | Future blog</title>
+    <meta property="og:title" content="Map的并发读写操作 - Future blog">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-04-27T12:01:41&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-04-27T12:01:41&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Map的并发读写操作">
+        
+    <meta name="author" content="">
+    <meta property="og:url" content="http://zzl578472734.github.io/post/map%E7%9A%84%E5%B9%B6%E5%8F%91%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C/">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://zzl578472734.github.io/">
+                        Future blog
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://zzl578472734.github.io/">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Map的并发读写操作</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年4月27日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <h2 id="golang-map的并发读写问题">golang map的并发读写问题</h2>
+<h3 id="1出现的问题">1.出现的问题</h3>
+<p>如果使用map出现这个情况的话，那可以肯定是并发读写map导致的了。</p>
+<pre><code>fatal error: concurrent map read
+ and map write
+</code></pre>
+<h3 id="2使用汇编查看go代码的执行情况">2.使用汇编查看go代码的执行情况</h3>
+<p>示例代码：</p>
+<pre><code>func main()  {
+
+    data := make(map[int]int, 0)
+    var wg sync.WaitGroup
+    wg.Add(2)
+    go func() {
+        defer wg.Done()
+        for i:= 0; i &lt; 50000000; i++ {
+            data[i] = i
+        }
+    }()
+
+    go func() {
+        defer wg.Done()
+        for i:= 0; i &lt; 50000000; i++ {
+            fmt.Println(data[i])
+        }
+    }()
+
+    wg.Wait()
+    fmt.Println(&quot;success&quot;)
+}
+</code></pre>
+<h3 id="3查看汇编代码执行的情况">3.查看汇编代码执行的情况</h3>
+<pre><code>go tool compile -S main.go
+</code></pre>
+<p>执行的结果</p>
+<pre><code>// 相关的汇编代码输出部分截图
+0x0066 00102 (main.go:32)	MOVQ	CX, (SP)
+0x006a 00106 (main.go:32)	PCDATA	$0, $3
+0x006a 00106 (main.go:32)	MOVQ	&quot;&quot;.data(SB), DX
+0x0071 00113 (main.go:32)	PCDATA	$0, $0
+0x0071 00113 (main.go:32)	MOVQ	DX, 8(SP)
+0x0076 00118 (main.go:32)	MOVQ	AX, 16(SP)
+0x007b 00123 (main.go:32)	CALL	runtime.mapaccess1_fast64(SB)
+0x0080 00128 (main.go:32)	PCDATA	$0, $1
+0x0080 00128 (main.go:32)	MOVQ	24(SP), AX
+0x0085 00133 (main.go:32)	PCDATA	$0, $0
+0x0085 00133 (main.go:32)	MOVQ	(AX), AX
+0x0088 00136 (main.go:32)	MOVQ	AX, (SP)
+</code></pre>
+<p>其中留意到这句话。</p>
+<pre><code>// 调用了runtime包的mapaccess1_fast64方法,访问元素
+0x007b 00123 (main.go:32)	CALL	runtime.mapaccess1_fast64(SB)
+</code></pre>
+<h3 id="4查看runtimemapaccess1_fast64方法">4.查看runtime.mapaccess1_fast64方法</h3>
+<pre><code>func mapaccess1_fast64(t *maptype, h *hmap, key uint64) unsafe.Pointer {
+    if raceenabled &amp;&amp; h != nil {
+        callerpc := getcallerpc()
+        racereadpc(unsafe.Pointer(h), callerpc, funcPC(mapaccess1_fast64))
+    }
+    if h == nil || h.count == 0 {
+        return unsafe.Pointer(&amp;zeroVal[0])
+    }
+    // 这边判断当前map是否是在进行写操作
+    if h.flags&amp;hashWriting != 0 {
+        throw(&quot;concurrent map read and map write&quot;)
+    }
+    var b *bmap
+    if h.B == 0 {
+        // One-bucket table. No need to hash.
+        b = (*bmap)(h.buckets)
+    } else {
+        hash := t.hasher(noescape(unsafe.Pointer(&amp;key)), uintptr(h.hash0))
+        m := bucketMask(h.B)
+        b = (*bmap)(add(h.buckets, (hash&amp;m)*uintptr(t.bucketsize)))
+        if c := h.oldbuckets; c != nil {
+            if !h.sameSizeGrow() {
+                // There used to be half as many buckets; mask down one more power of two.
+                m &gt;&gt;= 1
+            }
+            oldb := (*bmap)(add(c, (hash&amp;m)*uintptr(t.bucketsize)))
+            if !evacuated(oldb) {
+                b = oldb
+            }
+        }
+    }
+    for ; b != nil; b = b.overflow(t) {
+        for i, k := uintptr(0), b.keys(); i &lt; bucketCnt; i, k = i+1, add(k, 8) {
+            if *(*uint64)(k) == key &amp;&amp; !isEmpty(b.tophash[i]) {
+                return add(unsafe.Pointer(b), dataOffset+bucketCnt*8+i*uintptr(t.elemsize))
+            }
+        }
+    }
+    return unsafe.Pointer(&amp;zeroVal[0])
+}
+</code></pre>
+<p>说明了原生的map不支持并发读写map的操作，会出现上面的问题。作为补充看一下map的写操作确认下</p>
+<p>还是汇编查看了一下</p>
+<pre><code>// 调用了runtime.mapassign_fast64方法
+0x0075 00117 (main.go:20)	CALL	runtime.mapassign_fast64(SB)
+</code></pre>
+<h3 id="5-查看该mapassign_fast64方法">5. 查看该mapassign_fast64方法</h3>
+<pre><code>func mapassign_fast64ptr(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer {
+    if h == nil {
+        panic(plainError(&quot;assignment to entry in nil map&quot;))
+    }
+    if raceenabled {
+        callerpc := getcallerpc()
+        racewritepc(unsafe.Pointer(h), callerpc, funcPC(mapassign_fast64))
+    }
+    // 判断是不是已经已经有map在写入了
+    if h.flags&amp;hashWriting != 0 {
+        throw(&quot;concurrent map writes&quot;)
+    }
+    hash := t.hasher(noescape(unsafe.Pointer(&amp;key)), uintptr(h.hash0))
+
+    // Set hashWriting after calling t.hasher for consistency with mapassign.
+    // 设置当前map的状态，为写入状态
+    h.flags ^= hashWriting
+
+    if h.buckets == nil {
+        h.buckets = newobject(t.bucket) // newarray(t.bucket, 1)
+    }
+    
+    // ....
+}
+</code></pre>
+<p>从上面看出来，在map做赋值操作的时候，会将当前map的状态设置为写入的状态。这样子在并发情况，另外的goroutine就没办法对当前map进行读取操作了.</p>
+
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/golang%E7%9A%84%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/">Golang的函数式编程</a></li>
+        
+        <li><a href="/post/golang%E7%9A%84error%E5%8C%85/">Golang的Errors包</a></li>
+        
+        <li><a href="/post/golang%E7%9A%84log%E5%8C%85/">Golang的Log包</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/tags/golang'>golang</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://zzl578472734.github.io/">Future blog By </a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://zzl578472734.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" title="Golang的垃圾回收">Golang的垃圾回收</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/" title="Golang中的channel">Golang中的channel</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/" title="Golang实现snowflake算法">Golang实现snowflake算法</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Golang 锁的实现">Golang 锁的实现</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%BA%8C-lru%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E7%AD%96%E7%95%A5/" title="Redis-LRU删除数据策略">Redis-LRU删除数据策略</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%B8%80-%E8%BF%87%E6%9C%9F%E9%94%AE%E7%AD%96%E7%95%A5/" title="Redis-过期键删除策略">Redis-过期键删除策略</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/" title="阅读uber的golang规范">阅读uber的golang规范</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/" title="一个频率限制的变更,引发的血案">一个频率限制的变更,引发的血案</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/%E5%B9%B6%E5%8F%91map%E7%9A%84%E5%A4%84%E7%90%86/" title="并发map的处理">并发map的处理</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/map%E7%9A%84%E5%B9%B6%E5%8F%91%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C/" title="Map的并发读写操作">Map的并发读写操作</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="http://zzl578472734.github.io/categories/golang/">golang (11)</a></li>
+    
+    <li><a href="http://zzl578472734.github.io/categories/redis/">redis (2)</a></li>
+    
+    <li><a href="http://zzl578472734.github.io/categories/%E5%B0%8F%E8%AF%B4/">小说 (1)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="http://zzl578472734.github.io/tags/golang/">golang</a>
+    
+    <a href="http://zzl578472734.github.io/tags/redis/">redis</a>
+    
+    <a href="http://zzl578472734.github.io/tags/%E4%B8%9C%E9%87%8E%E5%9C%AD%E5%90%BE/">东野圭吾</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://zzl578472734.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

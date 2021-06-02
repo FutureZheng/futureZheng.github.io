@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>Golang 锁的实现 | Future blog</title>
+    <meta property="og:title" content="Golang 锁的实现 - Future blog">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-05-13T10:48:28&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-05-13T10:48:28&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Golang 锁的实现">
+        
+    <meta name="author" content="">
+    <meta property="og:url" content="http://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://zzl578472734.github.io/">
+                        Future blog
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://zzl578472734.github.io/">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Golang 锁的实现</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年5月13日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>golang中，有一句话很是体现除了它的编程哲学，“不要用共享欸村来通信，而是通过通信来共享数据”。</p>
+<p>在多线程的世界里面，常常需要多个线程共同访问同一个内存代码或者变量，也就是一个临界区，为此，需要给临界区上锁操作。通过加锁，释放锁来调节进出的线程。
+在golang中，较为提倡的方式是通过通道channel,来进行多个协程之间的数据通讯，当然，golang 也是内置了锁的支持操作，也可以实现多线程访问临界区的方式。</p>
+<pre><code>// 内置锁的结构体
+type Mutex struct {
+    state int32             // 锁的状态
+    sema  uint32            // 信号量
+}
+
+// 定义了锁的接口，需要有加锁和解锁操作。
+type Locker interface {
+    Lock()
+    Unlock()
+}
+</code></pre>
+<p>看锁定义的结构，可以看出，golang锁的实现也是基于信号量的，也即（二值信号量），信号量的值，非零既一。</p>
+<p>来看看内置锁结构，Mutex的上锁方法Lock的实现</p>
+<pre><code>func (m *Mutex) Lock() {
+    // 使用cas方式进行加锁，将0修改成1
+    if atomic.CompareAndSwapInt32(&amp;m.state, 0, mutexLocked) {
+        if race.Enabled {
+            race.Acquire(unsafe.Pointer(m))
+        }
+        return
+    }
+    // Slow path (outlined so that the fast path can be inlined)
+    // 如果加锁失败，进行自旋获取锁操作
+    m.lockSlow()
+}
+</code></pre>
+<p>如果加锁失败，则调用 lockSlow 方法，加锁操作，使用cas方式进行加锁，cas是由硬件本身支持的原子性操作，防止因为系统时钟中断，导致了数据问题。</p>
+<p>方法lockSlow的实现</p>
+<pre><code>func (m *Mutex) lockSlow() {
+    var waitStartTime int64
+    starving := false
+    awoke := false
+    iter := 0
+    old := m.state
+    for {
+        // Don't spin in starvation mode, ownership is handed off to waiters
+        // so we won't be able to acquire the mutex anyway.
+        // 1. 自旋操作
+        if old&amp;(mutexLocked|mutexStarving) == mutexLocked &amp;&amp; runtime_canSpin(iter) {
+            // Active spinning makes sense.
+            // Try to set mutexWoken flag to inform Unlock
+            // to not wake other blocked goroutines.
+            if !awoke &amp;&amp; old&amp;mutexWoken == 0 &amp;&amp; old&gt;&gt;mutexWaiterShift != 0 &amp;&amp;
+                atomic.CompareAndSwapInt32(&amp;m.state, old, old|mutexWoken) {
+                awoke = true
+            }
+            runtime_doSpin()
+            iter++
+            old = m.state
+            continue
+        }
+        // 更新锁相关的状态信息
+        new := old
+        // Don't try to acquire starving mutex, new arriving goroutines must queue.
+        if old&amp;mutexStarving == 0 {
+            new |= mutexLocked
+        }
+        if old&amp;(mutexLocked|mutexStarving) != 0 {
+            new += 1 &lt;&lt; mutexWaiterShift
+        }
+        // The current goroutine switches mutex to starvation mode.
+        // But if the mutex is currently unlocked, don't do the switch.
+        // Unlock expects that starving mutex has waiters, which will not
+        // be true in this case.
+        if starving &amp;&amp; old&amp;mutexLocked != 0 {
+            new |= mutexStarving
+        }
+        if awoke {
+            // The goroutine has been woken from sleep,
+            // so we need to reset the flag in either case.
+            if new&amp;mutexWoken == 0 {
+                throw(&quot;sync: inconsistent mutex state&quot;)
+            }
+            new &amp;^= mutexWoken
+        }
+        if atomic.CompareAndSwapInt32(&amp;m.state, old, new) {
+            if old&amp;(mutexLocked|mutexStarving) == 0 {
+                break // locked the mutex with CAS
+            }
+            // If we were already waiting before, queue at the front of the queue.
+            queueLifo := waitStartTime != 0
+            if waitStartTime == 0 {
+                waitStartTime = runtime_nanotime()
+            }
+            // 使用信号量进行休眠
+            runtime_SemacquireMutex(&amp;m.sema, queueLifo, 1)
+            starving = starving || runtime_nanotime()-waitStartTime &gt; starvationThresholdNs
+            old = m.state
+            if old&amp;mutexStarving != 0 {
+                // If this goroutine was woken and mutex is in starvation mode,
+                // ownership was handed off to us but mutex is in somewhat
+                // inconsistent state: mutexLocked is not set and we are still
+                // accounted as waiter. Fix that.
+                if old&amp;(mutexLocked|mutexWoken) != 0 || old&gt;&gt;mutexWaiterShift == 0 {
+                    throw(&quot;sync: inconsistent mutex state&quot;)
+                }
+                delta := int32(mutexLocked - 1&lt;&lt;mutexWaiterShift)
+                if !starving || old&gt;&gt;mutexWaiterShift == 1 {
+                    // Exit starvation mode.
+                    // Critical to do it here and consider wait time.
+                    // Starvation mode is so inefficient, that two goroutines
+                    // can go lock-step infinitely once they switch mutex
+                    // to starvation mode.
+                    delta -= mutexStarving
+                }
+                atomic.AddInt32(&amp;m.state, delta)
+                break
+            }
+            awoke = true
+            iter = 0
+        } else {
+            old = m.state
+        }
+    }
+
+    if race.Enabled {
+        race.Acquire(unsafe.Pointer(m))
+    }
+}
+</code></pre>
+
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/">阅读uber的golang规范</a></li>
+        
+        <li><a href="/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/">一个频率限制的变更,引发的血案</a></li>
+        
+        <li><a href="/post/%E5%B9%B6%E5%8F%91map%E7%9A%84%E5%A4%84%E7%90%86/">并发map的处理</a></li>
+        
+        <li><a href="/post/map%E7%9A%84%E5%B9%B6%E5%8F%91%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C/">Map的并发读写操作</a></li>
+        
+        <li><a href="/post/golang%E7%9A%84%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/">Golang的函数式编程</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/tags/golang'>golang</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://zzl578472734.github.io/">Future blog By </a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://zzl578472734.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" title="Golang的垃圾回收">Golang的垃圾回收</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/" title="Golang中的channel">Golang中的channel</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/" title="Golang实现snowflake算法">Golang实现snowflake算法</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Golang 锁的实现">Golang 锁的实现</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%BA%8C-lru%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E7%AD%96%E7%95%A5/" title="Redis-LRU删除数据策略">Redis-LRU删除数据策略</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%B8%80-%E8%BF%87%E6%9C%9F%E9%94%AE%E7%AD%96%E7%95%A5/" title="Redis-过期键删除策略">Redis-过期键删除策略</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/" title="阅读uber的golang规范">阅读uber的golang规范</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/" title="一个频率限制的变更,引发的血案">一个频率限制的变更,引发的血案</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/%E5%B9%B6%E5%8F%91map%E7%9A%84%E5%A4%84%E7%90%86/" title="并发map的处理">并发map的处理</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/map%E7%9A%84%E5%B9%B6%E5%8F%91%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C/" title="Map的并发读写操作">Map的并发读写操作</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="http://zzl578472734.github.io/categories/golang/">golang (11)</a></li>
+    
+    <li><a href="http://zzl578472734.github.io/categories/redis/">redis (2)</a></li>
+    
+    <li><a href="http://zzl578472734.github.io/categories/%E5%B0%8F%E8%AF%B4/">小说 (1)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="http://zzl578472734.github.io/tags/golang/">golang</a>
+    
+    <a href="http://zzl578472734.github.io/tags/redis/">redis</a>
+    
+    <a href="http://zzl578472734.github.io/tags/%E4%B8%9C%E9%87%8E%E5%9C%AD%E5%90%BE/">东野圭吾</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://zzl578472734.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

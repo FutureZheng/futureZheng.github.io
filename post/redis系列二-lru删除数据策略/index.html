@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>Redis-LRU删除数据策略 | Future blog</title>
+    <meta property="og:title" content="Redis-LRU删除数据策略 - Future blog">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-05-08T09:36:06&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-05-08T09:36:06&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Redis-LRU删除数据策略">
+        
+    <meta name="author" content="">
+    <meta property="og:url" content="http://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%BA%8C-lru%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E7%AD%96%E7%95%A5/">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://zzl578472734.github.io/">
+                        Future blog
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://zzl578472734.github.io/">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Redis-LRU删除数据策略</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年5月8日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/redis'>redis</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <p>除了上一篇文章介绍的redis两种删除key的方式以外，针对内存已经占满的情况下，redis还有一种额外的方式，处理内存数据。</p>
+<h4 id="1内存相关的配置">1.内存相关的配置</h4>
+<p>在redis的配置文件当中，根内存相关的参数配置有下面的几个相关的参数信息</p>
+<ul>
+<li>maxmemory : 允许redis使用的最大内存数据,默认为0，表示不开启内存淘汰</li>
+<li>maxmemory-policy ： 内存淘汰的策略. 默认 noeviction</li>
+<li>maxmemory-samples： 随机采样的精度，// TODO</li>
+</ul>
+<h4 id="2淘汰策略">2.淘汰策略</h4>
+<ul>
+<li>volatile-lru -&gt; 从所有的过期key中，采用近似LRU进行淘汰</li>
+<li>allkeys-lru -&gt; 对所有的key,采用近似的LRU淘汰策略</li>
+<li>volatile-lfu -&gt; 从所有的过期key中，采用近似LFU进行淘汰</li>
+<li>allkeys-lfu -&gt; 对所有的key,采用近似的LFU淘汰策略.</li>
+<li>volatile-random -&gt; 从过期的key集合中，随机删除key.</li>
+<li>allkeys-random -&gt; 所有的key随机淘汰.</li>
+<li>volatile-ttl -&gt; 淘汰最近的即将过期的key</li>
+<li>noeviction -&gt; 不淘汰内存，只是返回错误.</li>
+</ul>
+<p>上述的方式，都是在配置中，可以选择的redis淘汰key的方式。</p>
+<h4 id="3lru策略">3.LRU策略</h4>
+<p>LRU策略：是通过记录每一个对象的访问时间,根据访问时间来判断对象的使用情况，如果长时间未被访问的对象，就会被redis淘汰掉。</p>
+<h4 id="4-redis的对象">4. redis的对象</h4>
+<p>在redis中，每一个数据库，都保存再一个 redisDb 结构中，每一个redis的key,value都是一个redisObject对象，保存在dict键空间当中，存在过期时间的key,会额外保存在expires当中</p>
+<pre><code>typedef struct redisDb {
+    dict *dict;                // 数据库的键空间
+    dict *expires;              // 过期键的存放集合
+    dict *blocking_keys;        /* Keys with clients waiting for data (BLPOP) */
+    dict *ready_keys;           /* Blocked keys that received a PUSH */
+    dict *watched_keys;         /* WATCHED keys for MULTI/EXEC CAS */
+    struct evictionPoolEntry *eviction_pool;    /* Eviction pool of keys */
+    int id;                     /* Database ID */
+    long long avg_ttl;          /* Average TTL, just for stats */
+} redisDb;
+</code></pre>
+<p>在redis的对象中，保存着一个字段lru:REDIS_LRU_BITS,用来记录redis对象的最近访问时长。</p>
+<pre><code>typedef struct redisObject {
+    unsigned type:4;        // 对象的类型
+    unsigned encoding:4;    // 对应类型的编码
+    unsigned lru:REDIS_LRU_BITS; /* lru time (relative to server.lruclock) */       // lru time 
+    int refcount;           // 引用计数回收内存
+    void *ptr;
+} robj;
+</code></pre>
+<p>根据上面所述，redis在每一次访问对象的时候，都会去更新lru的时长，作为淘汰判断的依据。</p>
+<h4 id="4-lru更新的代码">4. lru更新的代码</h4>
+<p>执行redis命令的时候，进行是否需要内存淘汰。</p>
+<pre><code>// 根据是否设置maxmemory来确认是否要处理内存信息
+if (server.maxmemory) {
+    int retval = freeMemoryIfNeeded();
+    if ((c-&gt;cmd-&gt;flags &amp; REDIS_CMD_DENYOOM) &amp;&amp; retval == REDIS_ERR) {
+        flagTransaction(c);
+        addReply(c, shared.oomerr);
+        return REDIS_OK;
+    }
+}
+</code></pre>
+<p>访问redis的数据，以string为例</p>
+<pre><code>// 还是上一篇的方法
+robj *lookupKeyReadWithFlags(redisDb *db, robj *key, int flags) {
+    robj *val;
+
+    if (expireIfNeeded(db,key) == 1) {
+        /* Key expired. If we are in the context of a master, expireIfNeeded()
+         * returns 0 only when the key does not exist at all, so it's safe
+         * to return NULL ASAP. */
+        if (server.masterhost == NULL) {
+            server.stat_keyspace_misses++;
+            notifyKeyspaceEvent(NOTIFY_KEY_MISS, &quot;keymiss&quot;, key, db-&gt;id);
+            return NULL;
+        }
+
+        if (server.current_client &amp;&amp;
+            server.current_client != server.master &amp;&amp;
+            server.current_client-&gt;cmd &amp;&amp;
+            server.current_client-&gt;cmd-&gt;flags &amp; CMD_READONLY)
+        {
+            server.stat_keyspace_misses++;
+            notifyKeyspaceEvent(NOTIFY_KEY_MISS, &quot;keymiss&quot;, key, db-&gt;id);
+            return NULL;
+        }
+    }
+    // 访问key,并且更新对象的lru时间
+    val = lookupKey(db,key,flags);
+    if (val == NULL) {
+        server.stat_keyspace_misses++;
+        notifyKeyspaceEvent(NOTIFY_KEY_MISS, &quot;keymiss&quot;, key, db-&gt;id);
+    }
+    else
+        server.stat_keyspace_hits++;
+    return val;
+}
+
+// 访问key
+robj *lookupKey(redisDb *db, robj *key, int flags) {
+    dictEntry *de = dictFind(db-&gt;dict,key-&gt;ptr);
+    if (de) {
+        robj *val = dictGetVal(de);
+
+        /* Update the access time for the ageing algorithm.
+         * Don't do it if we have a saving child, as this will trigger
+         * a copy on write madness. */
+         // 更新对象的访问时间lru
+        if (!hasActiveChildProcess() &amp;&amp; !(flags &amp; LOOKUP_NOTOUCH)){
+            if (server.maxmemory_policy &amp; MAXMEMORY_FLAG_LFU) {
+                updateLFU(val);
+            } else {
+                val-&gt;lru = LRU_CLOCK();
+            }
+        }
+        return val;
+    } else {
+        return NULL;
+    }
+}
+
+// TODO 释放内存</code></pre>
+
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/redis%E7%B3%BB%E5%88%97%E4%B8%80-%E8%BF%87%E6%9C%9F%E9%94%AE%E7%AD%96%E7%95%A5/">Redis-过期键删除策略</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/tags/redis'>redis</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://zzl578472734.github.io/">Future blog By </a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://zzl578472734.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" title="Golang的垃圾回收">Golang的垃圾回收</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/" title="Golang中的channel">Golang中的channel</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/" title="Golang实现snowflake算法">Golang实现snowflake算法</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Golang 锁的实现">Golang 锁的实现</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%BA%8C-lru%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E7%AD%96%E7%95%A5/" title="Redis-LRU删除数据策略">Redis-LRU删除数据策略</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%B8%80-%E8%BF%87%E6%9C%9F%E9%94%AE%E7%AD%96%E7%95%A5/" title="Redis-过期键删除策略">Redis-过期键删除策略</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/" title="阅读uber的golang规范">阅读uber的golang规范</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/" title="一个频率限制的变更,引发的血案">一个频率限制的变更,引发的血案</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/%E5%B9%B6%E5%8F%91map%E7%9A%84%E5%A4%84%E7%90%86/" title="并发map的处理">并发map的处理</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/map%E7%9A%84%E5%B9%B6%E5%8F%91%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C/" title="Map的并发读写操作">Map的并发读写操作</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="http://zzl578472734.github.io/categories/golang/">golang (11)</a></li>
+    
+    <li><a href="http://zzl578472734.github.io/categories/redis/">redis (2)</a></li>
+    
+    <li><a href="http://zzl578472734.github.io/categories/%E5%B0%8F%E8%AF%B4/">小说 (1)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="http://zzl578472734.github.io/tags/golang/">golang</a>
+    
+    <a href="http://zzl578472734.github.io/tags/redis/">redis</a>
+    
+    <a href="http://zzl578472734.github.io/tags/%E4%B8%9C%E9%87%8E%E5%9C%AD%E5%90%BE/">东野圭吾</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://zzl578472734.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
