@@ -2,26 +2,26 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>golang on Future blog</title>
-    <link>http://zzl578472734.github.io/tags/golang/</link>
+    <link>https://zzl578472734.github.io/tags/golang/</link>
     <description>Recent content in golang on Future blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 28 May 2021 17:48:53 +0800</lastBuildDate><atom:link href="http://zzl578472734.github.io/tags/golang/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 28 May 2021 17:48:53 +0800</lastBuildDate><atom:link href="https://zzl578472734.github.io/tags/golang/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Golang的垃圾回收</title>
-      <link>http://zzl578472734.github.io/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/</link>
+      <link>https://zzl578472734.github.io/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/</link>
       <pubDate>Fri, 28 May 2021 17:48:53 +0800</pubDate>
       
-      <guid>http://zzl578472734.github.io/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/</guid>
+      <guid>https://zzl578472734.github.io/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/</guid>
       <description>golang 采用的垃圾回收算法的策略是标记-清楚法 并且实现了三色标记法来减少 “STW” 所占用的时长</description>
     </item>
     
     <item>
       <title>Golang中的channel</title>
-      <link>http://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/</link>
+      <link>https://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/</link>
       <pubDate>Fri, 14 May 2021 12:00:42 +0800</pubDate>
       
-      <guid>http://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/</guid>
+      <guid>https://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/</guid>
       <description>channel 作为golang中用于goroutine之间的通讯的方式，经常会听到一句话，就是“不要通过共享内存来通信，而实通过通信来共享内存”。
 总结一下：golang 是怎么处理发送数据到channel中的，。
 今天就来好好聊一聊channel吧。</description>
@@ -29,20 +29,22 @@
     
     <item>
       <title>Golang实现snowflake算法</title>
-      <link>http://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/</link>
+      <link>https://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/</link>
       <pubDate>Thu, 13 May 2021 15:41:52 +0800</pubDate>
       
-      <guid>http://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/</guid>
-      <description>在日常开发中，常常涉及到各种各样的id值，支付订单id,日志记录id,trace id等等，常见的分布式id生成方式也是有很多种的，比如数据库自增id,uuid，redis的整型id,还有snowflake算法生成的id等等. 下面来说明下，这几种常见的id生成方案。
-1. 数据库自增id 这个是最容易想到的，日常开发中，基本上要跟数据库打各种交道，通过给数据表字段设置自增属性AUTO_INCREMENT来使数据库字段支持自增属性。</description>
+      <guid>https://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/</guid>
+      <description>snowflake算法 雪花算法：一种分布式id生成算法规则,生成的分布式id规则上，随着时间的增加，不会出现重复。
+算法生成的格式
+0-00000000000000000000000000000000000000000-0000000000-000000000000
+分为4个部分</description>
     </item>
     
     <item>
       <title>Golang 锁的实现</title>
-      <link>http://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/</link>
+      <link>https://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/</link>
       <pubDate>Thu, 13 May 2021 10:48:28 +0800</pubDate>
       
-      <guid>http://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/</guid>
+      <guid>https://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/</guid>
       <description>golang中，有一句话很是体现除了它的编程哲学，“不要用共享欸村来通信，而是通过通信来共享数据”。
 在多线程的世界里面，常常需要多个线程共同访问同一个内存代码或者变量，也就是一个临界区，为此，需要给临界区上锁操作。通过加锁，释放锁来调节进出的线程。 在golang中，较为提倡的方式是通过通道channel,来进行多个协程之间的数据通讯，当然，golang 也是内置了锁的支持操作，也可以实现多线程访问临界区的方式。
 // 内置锁的结构体 type Mutex struct { state int32 // 锁的状态 sema uint32 // 信号量 } // 定义了锁的接口，需要有加锁和解锁操作。 type Locker interface { Lock() Unlock() }  看锁定义的结构，可以看出，golang锁的实现也是基于信号量的，也即（二值信号量），信号量的值，非零既一。</description>
@@ -50,10 +52,10 @@
     
     <item>
       <title>阅读uber的golang规范</title>
-      <link>http://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/</link>
+      <link>https://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/</link>
       <pubDate>Thu, 29 Apr 2021 10:26:00 +0800</pubDate>
       
-      <guid>http://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/</guid>
+      <guid>https://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/</guid>
       <description>阅读uber的go规范，原文地址 https://github.com/uber-go/guide/blob/master/style.md
 下面是一些我根据自己实际情况总结出来的，建议查看原文，根据自己的情况，看看是否也出现了类似的情况
 1. 第一条规则，也是uber的第一条规则，特别提出来。 You almost never need a pointer to an interface.</description>
@@ -61,10 +63,10 @@
     
     <item>
       <title>一个频率限制的变更,引发的血案</title>
-      <link>http://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/</link>
+      <link>https://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/</link>
       <pubDate>Wed, 28 Apr 2021 16:22:44 +0800</pubDate>
       
-      <guid>http://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/</guid>
+      <guid>https://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/</guid>
       <description>对接过微信现金红包的同学应该知道，微信官方是有限制接口的调用频率的。
 重点说三遍。这块微信限制改成了 30/秒，30/秒，30/秒。
 由于，开发同学一般都不会有企业微信支付的商户号的相关权限，所以很难同步到商户号上面，微信推送过来的信息。2021年02月份左右，刚好是过年期间，业务上面调用了微信发放红包的接口。 但是频繁告警出现了</description>
@@ -72,10 +74,10 @@
     
     <item>
       <title>并发map的处理</title>
-      <link>http://zzl578472734.github.io/post/%E5%B9%B6%E5%8F%91map%E7%9A%84%E5%A4%84%E7%90%86/</link>
+      <link>https://zzl578472734.github.io/post/%E5%B9%B6%E5%8F%91map%E7%9A%84%E5%A4%84%E7%90%86/</link>
       <pubDate>Wed, 28 Apr 2021 11:00:52 +0800</pubDate>
       
-      <guid>http://zzl578472734.github.io/post/%E5%B9%B6%E5%8F%91map%E7%9A%84%E5%A4%84%E7%90%86/</guid>
+      <guid>https://zzl578472734.github.io/post/%E5%B9%B6%E5%8F%91map%E7%9A%84%E5%A4%84%E7%90%86/</guid>
       <description>上一篇，讲到了多个goroutine对map的操作，导致了并发读写的问题。也就是说，golang原生自带的map不是并发安全的。那现在有一个问题，如果真的有场景或者需求需要多个goroutine来操作map,这个时候，应该要怎么处理map呢？
 1. 可以很快的想到的是，通过加锁操作，允许同一个时刻有且仅有一个goroutine进行操作. 在原来的代码基础上，增加了互斥锁操作。
  互斥锁  示例程序一</description>
@@ -83,21 +85,22 @@
     
     <item>
       <title>Map的并发读写操作</title>
-      <link>http://zzl578472734.github.io/post/map%E7%9A%84%E5%B9%B6%E5%8F%91%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C/</link>
+      <link>https://zzl578472734.github.io/post/map%E7%9A%84%E5%B9%B6%E5%8F%91%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C/</link>
       <pubDate>Tue, 27 Apr 2021 12:01:41 +0800</pubDate>
       
-      <guid>http://zzl578472734.github.io/post/map%E7%9A%84%E5%B9%B6%E5%8F%91%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C/</guid>
+      <guid>https://zzl578472734.github.io/post/map%E7%9A%84%E5%B9%B6%E5%8F%91%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C/</guid>
       <description>golang map的并发读写问题 1.出现的问题 如果使用map出现这个情况的话，那可以肯定是并发读写map导致的了。
 fatal error: concurrent map read and map write  2.</description>
     </item>
     
     <item>
       <title>Golang的函数式编程</title>
-      <link>http://zzl578472734.github.io/post/golang%E7%9A%84%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/</link>
+      <link>https://zzl578472734.github.io/post/golang%E7%9A%84%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/</link>
       <pubDate>Fri, 16 Apr 2021 15:17:44 +0800</pubDate>
       
-      <guid>http://zzl578472734.github.io/post/golang%E7%9A%84%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/</guid>
-      <description>今天来聊一聊什么呢？golang的函数式编程吧.
+      <guid>https://zzl578472734.github.io/post/golang%E7%9A%84%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/</guid>
+      <description>一。我理解的函数式编程
+今天来聊一聊什么呢？golang的函数式编程吧.
 如果你或多或少看过golang一些软件包的实现方式，就能大体看出端倪。
 比如golang中，grpc客户端建立server的连接，使用的拨号函数.
 // 函数签名 func Dial(target string, opts .</description>
@@ -105,20 +108,20 @@ fatal error: concurrent map read and map write  2.</description>
     
     <item>
       <title>Golang的Errors包</title>
-      <link>http://zzl578472734.github.io/post/golang%E7%9A%84error%E5%8C%85/</link>
+      <link>https://zzl578472734.github.io/post/golang%E7%9A%84error%E5%8C%85/</link>
       <pubDate>Sat, 30 Jan 2021 10:29:04 +0800</pubDate>
       
-      <guid>http://zzl578472734.github.io/post/golang%E7%9A%84error%E5%8C%85/</guid>
+      <guid>https://zzl578472734.github.io/post/golang%E7%9A%84error%E5%8C%85/</guid>
       <description>errors包 1. 主要的包内结构体定义 标准包定义的结构体信息
 type errorString struct { s string }  内置一个错误信息的接口提，通过一个字符串来表示相关的错误信息</description>
     </item>
     
     <item>
       <title>Golang的Log包</title>
-      <link>http://zzl578472734.github.io/post/golang%E7%9A%84log%E5%8C%85/</link>
+      <link>https://zzl578472734.github.io/post/golang%E7%9A%84log%E5%8C%85/</link>
       <pubDate>Wed, 09 Dec 2020 20:46:41 +0800</pubDate>
       
-      <guid>http://zzl578472734.github.io/post/golang%E7%9A%84log%E5%8C%85/</guid>
+      <guid>https://zzl578472734.github.io/post/golang%E7%9A%84log%E5%8C%85/</guid>
       <description>log包 1. 主要的包内结构体定义 标准包定义的结构体信息
 type Logger struct { // 原子锁 mu sync.</description>
     </item>
