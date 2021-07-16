@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>Golang的Errors包 | Future blog</title>
+    <meta property="og:title" content="Golang的Errors包 - Future blog">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-01-30T10:29:04&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-01-30T10:29:04&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Golang的Errors包">
+        
+    <meta name="author" content="">
+    <meta property="og:url" content="http://example.org/post/golang%E7%9A%84error%E5%8C%85/">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://example.org/">
+                        Future blog
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://example.org/">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Golang的Errors包</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年1月30日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <h1 id="errors包">errors包</h1>
+<h3 id="1-主要的包内结构体定义">1. 主要的包内结构体定义</h3>
+<p>标准包定义的结构体信息</p>
+<pre><code>type errorString struct {
+    s string
+}
+</code></pre>
+<p>内置一个错误信息的接口提，通过一个字符串来表示相关的错误信息</p>
+<h3 id="2-包内初始化的方法">2. 包内初始化的方法</h3>
+<p>包内初始化方法</p>
+<pre><code>func New(text string) error {
+    return &amp;errorString{text}
+}
+</code></pre>
+<p>通过对外暴露一个工厂方法，来初始化错误信息。</p>
+<h3 id="3-使用方式">3. 使用方式</h3>
+<pre><code>func main()  {
+    err := errors.New(&quot;This is a error &quot;)
+    fmt.Println(err)
+}
+</code></pre>
+<h3 id="4-使用上的弊端">4. 使用上的弊端</h3>
+<p>说明：由于golang支持的错误信息，相对来说较为简单，只能返回一段字符串文本，无法表示出相关的调用信息，或者其他内容，常见的做法有两种</p>
+<ul>
+<li>通过内置的fmt.Errorf来实现</li>
+<li>通过自定义错误信息来返回</li>
+</ul>
+<p>1.使用fmt.Errorf来实现</p>
+<pre><code>func main()  {
+    err := errors.New(&quot;This is a error &quot;)
+    err = fmt.Errorf(&quot;Wrap error: %v &quot;, err)
+    fmt.Println(err)
+}
+</code></pre>
+<p>问题点也相对明显，没办法拿到最原始的错误信息，因为使用了fmt.Errorf生成了新的error,并且拼接上新的错误信息。</p>
+<p>2.自定义错误信息结构</p>
+<pre><code>type MyErr struct {
+    err error
+    msg string
+}
+
+func (c MyErr)Error() string {
+    return c.msg + c.err.Error()
+}
+
+func main()  {
+    // 初始化错误信息
+    err := errors.New(&quot;This is a error &quot;)
+
+    // 定义一层错误信息
+    firstErr := &amp;MyErr{err: err, msg: &quot;First err &quot;}
+
+    // 定义第二层错误信息
+    secondErr := &amp;MyErr{err: firstErr, msg: &quot;Second err &quot;}
+    fmt.Println(secondErr)
+    fmt.Println(secondErr.err.Error())
+}
+</code></pre>
+<p>通多自定义错误的结构体信息，来实现多次错误信息的嵌套传递，但是，各个包，系统，业务邓定义的错误信息，不一定相互兼容，存在的各种差异，
+golang 官方就实现了当前的错误包装</p>
+<h3 id="5-errors-的新特性">5. errors 的新特性</h3>
+<ul>
+<li>提供了包装类的错误信息</li>
+<li>判断错误信息是否是再包装类李米娜</li>
+<li>断言包装类的错误信息</li>
+</ul>
+<ol>
+<li>使用方式</li>
+</ol>
+<p>通过扩展fmt.Errorf的标识符,%w来表示一个包装类的错误信息,来生成一个包装类的错误</p>
+<pre><code>func main()  {
+    err := errors.New(&quot;Invalid bad param &quot;)
+    newErr := fmt.Errorf(&quot;Wrap err: %w &quot;, err)
+    fmt.Println(newErr)
+}
+</code></pre>
+<p>源码分析</p>
+<pre><code>var err error
+if p.wrappedErr == nil {
+    err = errors.New(s)
+} else {
+    err = &amp;wrapError{s, p.wrappedErr}
+}
+</code></pre>
+<p>通过判断p.wrappedErr 是否存在，来确定，如果存在，表示这是一个包装类型，同事实例化一个内置的结构体wrapError</p>
+<p>结构体说明</p>
+<pre><code>type wrapError struct {
+    msg string
+    err error
+}
+
+func (e *wrapError) Error() string {
+    return e.msg
+}
+
+func (e *wrapError) Unwrap() error {
+    return e.err
+}
+</code></pre>
+<p>实现了解包的方法Unwrap,获取包装结构体内置的err类</p>
+<p>工具类相关</p>
+<p>1.Unwrap函数，用来获取包装错误类的错误信息</p>
+<p>函数调用</p>
+<pre><code>func main()  {
+
+    newErr := fmt.Errorf(&quot;Wrap err: %w &quot;, errors.New(&quot;Invalid bad param &quot;))
+    fmt.Println(errors.Unwrap(newErr))
+}
+</code></pre>
+<p>源码分析</p>
+<pre><code>func Unwrap(err error) error {
+    // 断言判断是否是包装类
+    u, ok := err.(interface {
+        Unwrap() error
+    })
+    // 判断是否是包装类
+    if !ok {
+        return nil
+    }
+    // 调用解包的方法
+    return u.Unwrap()
+}
+</code></pre>
+<p>说明：根据上面生成包装类和解包的方法来看，如果生成的是包装类，那一定是实现了Unwrap方法的结构体wrapError实例，这这边获取到对应内置错误信息.</p>
+<p>2.Is函数，判断两个错误信息是否相等，或者包含关系</p>
+<p>说明，再没有包装类的时候，判断两个错误信息是否相等，直接使用等号（=）来判断即可，err1 = err2 但是引入了包装类，要判断两个错误信息是否存在包含关系，就不能这样子判断了</p>
+<p>函数调用</p>
+<pre><code>func main()  {
+
+    err := errors.New(&quot;Invalid bad param &quot;)
+    newErr := fmt.Errorf(&quot;Wrap err: %w &quot;, err)
+    fmt.Println(errors.Is(newErr, err))
+}
+</code></pre>
+<p>源码分析</p>
+<pre><code>func Is(err, target error) bool {
+    if target == nil {
+        return err == target
+    }
+
+    isComparable := reflectlite.TypeOf(target).Comparable()
+    for {
+        // 判断两个错误信息是否相等
+        if isComparable &amp;&amp; err == target {
+            return true
+        }
+        
+        // 断言错误信息是否实现了IS函数，实际上就是判断是否是自定义实现了错误信息
+        if x, ok := err.(interface{ Is(error) bool }); ok &amp;&amp; x.Is(target) {
+            return true
+        }
+        // TODO: consider supporting target.Is(err). This would allow
+        // user-definable predicates, but also may allow for coping with sloppy
+        // APIs, thereby making it easier to get away with them.
+        
+        // 解开一层包装类，获取错误信息
+        if err = Unwrap(err); err == nil {
+            return false
+        }
+    }
+}
+</code></pre>
+<p>// TODO as函数</p>
+
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/golang%E7%9A%84log%E5%8C%85/">Golang的Log包</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/tags/golang'>golang</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://example.org/">Future blog By </a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://example.org/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://example.org/post/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/" title="算法-归并排序">算法-归并排序</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/%E8%B0%88%E8%B0%88%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B/" title="谈谈我认为的技术选型">谈谈我认为的技术选型</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" title="算法-二分查找">算法-二分查找</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/golang%E5%A4%84%E7%90%86http%E8%AF%B7%E6%B1%82/" title="Golang处理http请求">Golang处理http请求</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%BF%90%E7%AE%97/" title="二进制运算">二进制运算</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/%E9%9B%B6copy%E6%8A%80%E6%9C%AF/" title="零拷贝技术">零拷贝技术</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" title="Golang的垃圾回收">Golang的垃圾回收</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/golang%E4%B8%AD%E7%9A%84channel/" title="Golang中的channel">Golang中的channel</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/" title="Golang实现snowflake算法">Golang实现snowflake算法</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Golang 锁的实现">Golang 锁的实现</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="http://example.org/categories/golang/">golang (11)</a></li>
+    
+    <li><a href="http://example.org/categories/redis/">redis (2)</a></li>
+    
+    <li><a href="http://example.org/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统 (2)</a></li>
+    
+    <li><a href="http://example.org/categories/%E6%9D%82%E8%B0%88/">杂谈 (1)</a></li>
+    
+    <li><a href="http://example.org/categories/%E6%9E%B6%E6%9E%84%E4%B9%8B%E9%81%93/">架构之道 (1)</a></li>
+    
+    <li><a href="http://example.org/categories/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列 (1)</a></li>
+    
+    <li><a href="http://example.org/categories/%E7%AC%94%E8%AE%B0/">笔记 (1)</a></li>
+    
+    <li><a href="http://example.org/categories/%E7%AE%97%E6%B3%95/">算法 (3)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="http://example.org/tags/golang/">golang</a>
+    
+    <a href="http://example.org/tags/redis/">redis</a>
+    
+    <a href="http://example.org/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a>
+    
+    <a href="http://example.org/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="http://example.org/tags/%E6%9E%B6%E6%9E%84%E4%B9%8B%E9%81%93/">架构之道</a>
+    
+    <a href="http://example.org/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列</a>
+    
+    <a href="http://example.org/tags/%E7%AC%94%E8%AE%B0/">笔记</a>
+    
+    <a href="http://example.org/tags/%E7%AE%97%E6%B3%95/">算法</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://example.org/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
