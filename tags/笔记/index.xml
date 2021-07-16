@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>笔记 on Future blog</title>
-    <link>http://example.org/tags/%E7%AC%94%E8%AE%B0/</link>
+    <link>https://zzl578472734.github.io/tags/%E7%AC%94%E8%AE%B0/</link>
     <description>Recent content in 笔记 on Future blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 28 Apr 2021 16:22:44 +0800</lastBuildDate><atom:link href="http://example.org/tags/%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 28 Apr 2021 16:22:44 +0800</lastBuildDate><atom:link href="https://zzl578472734.github.io/tags/%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>一个频率限制的变更,引发的血案</title>
-      <link>http://example.org/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/</link>
+      <link>https://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/</link>
       <pubDate>Wed, 28 Apr 2021 16:22:44 +0800</pubDate>
       
-      <guid>http://example.org/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/</guid>
+      <guid>https://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/</guid>
       <description>对接过微信现金红包的同学应该知道，微信官方是有限制接口的调用频率的。
 重点说三遍。这块微信限制改成了 30/秒，30/秒，30/秒。
 由于，开发同学一般都不会有企业微信支付的商户号的相关权限，所以很难同步到商户号上面，微信推送过来的信息。2021年02月份左右，刚好是过年期间，业务上面调用了微信发放红包的接口。 但是频繁告警出现了</description>
