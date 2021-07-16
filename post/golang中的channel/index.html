@@ -20,7 +20,11 @@
     <meta name="description" content="Golang中的channel">
         
     <meta name="author" content="">
+<<<<<<< HEAD
     <meta property="og:url" content="http://example.org/post/golang%E4%B8%AD%E7%9A%84channel/">
+=======
+    <meta property="og:url" content="http://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/">
+>>>>>>> c63dd87e9420f5cdc4244b7b17239721c5bf8357
     <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
 
     <link rel="stylesheet" href='/css/normalize.css'>
@@ -42,7 +46,11 @@
         <div class="col-group">
             <div class="site-name ">
                 
+<<<<<<< HEAD
                     <a id="logo" href="http://example.org/">
+=======
+                    <a id="logo" href="http://zzl578472734.github.io/">
+>>>>>>> c63dd87e9420f5cdc4244b7b17239721c5bf8357
                         Future blog
                     </a>
                 
@@ -50,7 +58,11 @@
             </div>
             <div>
                 <nav id="nav-menu" class="clearfix">
+<<<<<<< HEAD
                     <a class="current" href="http://example.org/">首页</a>
+=======
+                    <a class="current" href="http://zzl578472734.github.io/">首页</a>
+>>>>>>> c63dd87e9420f5cdc4244b7b17239721c5bf8357
                     
                 </nav>
             </div>
@@ -107,51 +119,50 @@ ch &lt;- 1
 0x005c 00092 (main.go:7)	ADDQ	$32, SP
 </code></pre>
 <h4 id="1-先看看创建的channel的操作代码">1. 先看看创建的channel的操作代码</h4>
-<pre><code>func makechan(t *chantype, size int) *hchan {
-    elem := t.elem
-
-    // compiler checks this but be safe.
-    if elem.size &gt;= 1&lt;&lt;16 {
-        throw(&quot;makechan: invalid channel element type&quot;)
-    }
-    if hchanSize%maxAlign != 0 || elem.align &gt; maxAlign {
-        throw(&quot;makechan: bad alignment&quot;)
-    }
-
-    mem, overflow := math.MulUintptr(elem.size, uintptr(size))
-    if overflow || mem &gt; maxAlloc-hchanSize || size &lt; 0 {
-        panic(plainError(&quot;makechan: size out of range&quot;))
-    }
-
-    // 根据不同的情况，创建channel
-    var c *hchan
-    switch {
-    case mem == 0:
-        // 无缓冲队列
-        c = (*hchan)(mallocgc(hchanSize, nil, true))
-        // Race detector uses this location for synchronization.
-        c.buf = c.raceaddr()
-    case elem.ptrdata == 0:
-        // Elements do not contain pointers.
-        // Allocate hchan and buf in one call.
-        c = (*hchan)(mallocgc(hchanSize+mem, nil, true))
-        c.buf = add(unsafe.Pointer(c), hchanSize)
-    default:
-        // 元素包含指针
-        c = new(hchan)
-        c.buf = mallocgc(mem, elem, true)
-    }
-
-    c.elemsize = uint16(elem.size)
-    c.elemtype = elem
-    c.dataqsiz = uint(size)
-
-    if debugChan {
-        print(&quot;makechan: chan=&quot;, c, &quot;; elemsize=&quot;, elem.size, &quot;; dataqsiz=&quot;, size, &quot;\n&quot;)
-    }
-    return c
+<p>func makechan(t *chantype, size int) *hchan {
+elem := t.elem</p>
+<pre><code>// compiler checks this but be safe.
+if elem.size &gt;= 1&lt;&lt;16 {
+    throw(&quot;makechan: invalid channel element type&quot;)
 }
+if hchanSize%maxAlign != 0 || elem.align &gt; maxAlign {
+    throw(&quot;makechan: bad alignment&quot;)
+}
+
+mem, overflow := math.MulUintptr(elem.size, uintptr(size))
+if overflow || mem &gt; maxAlloc-hchanSize || size &lt; 0 {
+    panic(plainError(&quot;makechan: size out of range&quot;))
+}
+
+// 根据不同的情况，创建channel
+var c *hchan
+switch {
+case mem == 0:
+    // 无缓冲队列
+    c = (*hchan)(mallocgc(hchanSize, nil, true))
+    // Race detector uses this location for synchronization.
+    c.buf = c.raceaddr()
+case elem.ptrdata == 0:
+    // Elements do not contain pointers.
+    // Allocate hchan and buf in one call.
+    c = (*hchan)(mallocgc(hchanSize+mem, nil, true))
+    c.buf = add(unsafe.Pointer(c), hchanSize)
+default:
+    // 元素包含指针
+    c = new(hchan)
+    c.buf = mallocgc(mem, elem, true)
+}
+
+c.elemsize = uint16(elem.size)
+c.elemtype = elem
+c.dataqsiz = uint(size)
+
+if debugChan {
+    print(&quot;makechan: chan=&quot;, c, &quot;; elemsize=&quot;, elem.size, &quot;; dataqsiz=&quot;, size, &quot;\n&quot;)
+}
+return c
 </code></pre>
+<p>}</p>
 <p>上面的操作，就是一下参数检查，再根据实际情况，创建不同的hchan类型</p>
 <p>源码定义的chan数据结构</p>
 <pre><code>type hchan struct {
@@ -174,7 +185,7 @@ ch &lt;- 1
 <ul>
 <li>qcount： 队列中的数据数量.</li>
 <li>dataqsiz: 循环队列的大小.</li>
-<li>buf: 指向缓冲区的数据指针.</li>
+<li>bug: 指向缓冲区的数据指针.</li>
 <li>sendx：生产者获取循环队列里面的下标位置.</li>
 <li>recvx：消费者获取循环队列的数据下标.</li>
 <li>recvq：等待消费的goroutine列表</li>
@@ -209,7 +220,7 @@ ch &lt;- 1
         t0 = cputicks()
     }
 
-    // 加锁操作,原子性
+    // 加锁操作
     lock(&amp;c.lock)
 
     // 如果当前发送的通道已经关闭，又发送了数据，这边会抛异常。
@@ -264,7 +275,7 @@ ch &lt;- 1
     gp.param = nil
     c.sendq.enqueue(mysg)
     atomic.Store8(&amp;gp.parkingOnChan, 1)
-    // goroutine 告知调度器，将当前goroutine进行休眠,让其他goroutine执行        
+    // goroutine 告知调度器，讲当前goroutine进行休眠,让其他goroutine执行        
     gopark(chanparkcommit, unsafe.Pointer(&amp;c.lock), waitReasonChanSend, traceEvGoBlockSend, 2)
     
     // 下面这部分代码为，调度器唤醒goroutine以后执行的代码数据
@@ -293,7 +304,6 @@ ch &lt;- 1
 </code></pre>
 <p>golang中向channel发送数据总结：</p>
 <ol>
-<li>lock保证发送数据的原子性.</li>
 <li>如果当前channel存在消费者的goroutine列表,会将数据直接发放给第一个接收channel数据的goroutine。</li>
 <li>如果channel添加了数据缓存区，并且缓冲区没满,会计算新的数据位置，并且保存起来。</li>
 <li>如果缓冲区已经满了，或者当前channel是无缓冲区的，会生成sudog结构，挂载在channel发送者列表当中，并且让调度器休眠当前goroutine。</li>
@@ -319,123 +329,121 @@ close(ch)
 0x00d7 00215 (main.go:16)	PCDATA	$0, $0
 </code></pre>
 <p>执行的方法函数 chanrecv1</p>
-<pre><code>func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool) {
-    // raceenabled: don't need to check ep, as it is always on the stack
-    // or is new memory allocated by reflect.
+<p>func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool) {
+// raceenabled: don&rsquo;t need to check ep, as it is always on the stack
+// or is new memory allocated by reflect.</p>
+<pre><code>if debugChan {
+    print(&quot;chanrecv: chan=&quot;, c, &quot;\n&quot;)
+}
 
-    if debugChan {
-        print(&quot;chanrecv: chan=&quot;, c, &quot;\n&quot;)
-    }
-
-    if c == nil {
-        if !block {
-            return
-        }
-        gopark(nil, nil, waitReasonChanReceiveNilChan, traceEvGoStop, 2)
-        throw(&quot;unreachable&quot;)
-    }
-
-    if !block &amp;&amp; (c.dataqsiz == 0 &amp;&amp; c.sendq.first == nil ||
-        c.dataqsiz &gt; 0 &amp;&amp; atomic.Loaduint(&amp;c.qcount) == 0) &amp;&amp;
-        atomic.Load(&amp;c.closed) == 0 {
+if c == nil {
+    if !block {
         return
     }
-
-    var t0 int64
-    if blockprofilerate &gt; 0 {
-        t0 = cputicks()
-    }
-
-    // 加锁操作
-    lock(&amp;c.lock)
-
-    // 当前channel已经关闭，并且元素的个数 = 0
-    if c.closed != 0 &amp;&amp; c.qcount == 0 {
-        if raceenabled {
-            raceacquire(c.raceaddr())
-        }
-        unlock(&amp;c.lock)
-        if ep != nil {
-            typedmemclr(c.elemtype, ep)
-        }
-        return true, false
-    }
-
-    // 如果存在等待的生成这goroutine的话，直接回复
-    if sg := c.sendq.dequeue(); sg != nil {
-        // 这边唤醒生产者的goroutine
-        recv(c, sg, ep, func() { unlock(&amp;c.lock) }, 3)
-        return true, true
-    }
-
-    // 存在缓冲数据
-    if c.qcount &gt; 0 {
-        // Receive directly from queue
-        qp := chanbuf(c, c.recvx)
-        if raceenabled {
-            raceacquire(qp)
-            racerelease(qp)
-        }
-        if ep != nil {
-            // 将数据直接赋值到 ep 里面
-            typedmemmove(c.elemtype, ep, qp)
-        }
-        typedmemclr(c.elemtype, qp)
-        c.recvx++
-        if c.recvx == c.dataqsiz {
-            c.recvx = 0
-        }
-        c.qcount--
-        unlock(&amp;c.lock)
-        return true, true
-    }
-
-    if !block {
-        unlock(&amp;c.lock)
-        return false, false
-    }
-    // 如果没有数据接收
-
-    // no sender available: block on this channel.
-    gp := getg()
-    mysg := acquireSudog()
-    mysg.releasetime = 0
-    if t0 != 0 {
-        mysg.releasetime = -1
-    }
-    // No stack splits between assigning elem and enqueuing mysg
-    // on gp.waiting where copystack can find it.
-    mysg.elem = ep
-    mysg.waitlink = nil
-    gp.waiting = mysg
-    mysg.g = gp
-    mysg.isSelect = false
-    mysg.c = c
-    gp.param = nil
-
-    // 将当前goroutine添加到等待接收的goroutine列表里面
-    c.recvq.enqueue(mysg)
-
-    // 当前goroutine做休眠操作
-    atomic.Store8(&amp;gp.parkingOnChan, 1)
-    gopark(chanparkcommit, unsafe.Pointer(&amp;c.lock), waitReasonChanReceive, traceEvGoBlockRecv, 2)
-
-    // 信号量唤醒操作
-    if mysg != gp.waiting {
-        throw(&quot;G waiting list is corrupted&quot;)
-    }
-    gp.waiting = nil
-    gp.activeStackChans = false
-    if mysg.releasetime &gt; 0 {
-        blockevent(mysg.releasetime-t0, 2)
-    }
-    closed := gp.param == nil
-    gp.param = nil
-    mysg.c = nil
-    releaseSudog(mysg)
-    return true, !closed
+    gopark(nil, nil, waitReasonChanReceiveNilChan, traceEvGoStop, 2)
+    throw(&quot;unreachable&quot;)
 }
+
+if !block &amp;&amp; (c.dataqsiz == 0 &amp;&amp; c.sendq.first == nil ||
+    c.dataqsiz &gt; 0 &amp;&amp; atomic.Loaduint(&amp;c.qcount) == 0) &amp;&amp;
+    atomic.Load(&amp;c.closed) == 0 {
+    return
+}
+
+var t0 int64
+if blockprofilerate &gt; 0 {
+    t0 = cputicks()
+}
+
+lock(&amp;c.lock)
+
+// 当前channel已经关闭，并且元素的个数 = 0
+if c.closed != 0 &amp;&amp; c.qcount == 0 {
+    if raceenabled {
+        raceacquire(c.raceaddr())
+    }
+    unlock(&amp;c.lock)
+    if ep != nil {
+        typedmemclr(c.elemtype, ep)
+    }
+    return true, false
+}
+
+// 如果存在等待的生成这goroutine的话，直接回复
+if sg := c.sendq.dequeue(); sg != nil {
+    // 这边唤醒生产者的goroutine
+    recv(c, sg, ep, func() { unlock(&amp;c.lock) }, 3)
+    return true, true
+}
+
+// 存在缓冲数据
+if c.qcount &gt; 0 {
+    // Receive directly from queue
+    qp := chanbuf(c, c.recvx)
+    if raceenabled {
+        raceacquire(qp)
+        racerelease(qp)
+    }
+    if ep != nil {
+        // 将数据直接赋值到 ep 里面
+        typedmemmove(c.elemtype, ep, qp)
+    }
+    typedmemclr(c.elemtype, qp)
+    c.recvx++
+    if c.recvx == c.dataqsiz {
+        c.recvx = 0
+    }
+    c.qcount--
+    unlock(&amp;c.lock)
+    return true, true
+}
+
+if !block {
+    unlock(&amp;c.lock)
+    return false, false
+}
+// 如果没有数据接收
+
+// no sender available: block on this channel.
+gp := getg()
+mysg := acquireSudog()
+mysg.releasetime = 0
+if t0 != 0 {
+    mysg.releasetime = -1
+}
+// No stack splits between assigning elem and enqueuing mysg
+// on gp.waiting where copystack can find it.
+mysg.elem = ep
+mysg.waitlink = nil
+gp.waiting = mysg
+mysg.g = gp
+mysg.isSelect = false
+mysg.c = c
+gp.param = nil
+
+// 将当前goroutine添加到等待接收的goroutine列表里面
+c.recvq.enqueue(mysg)
+
+// 当前goroutine做休眠操作
+atomic.Store8(&amp;gp.parkingOnChan, 1)
+gopark(chanparkcommit, unsafe.Pointer(&amp;c.lock), waitReasonChanReceive, traceEvGoBlockRecv, 2)
+
+// someone woke us up
+if mysg != gp.waiting {
+    throw(&quot;G waiting list is corrupted&quot;)
+}
+gp.waiting = nil
+gp.activeStackChans = false
+if mysg.releasetime &gt; 0 {
+    blockevent(mysg.releasetime-t0, 2)
+}
+closed := gp.param == nil
+gp.param = nil
+mysg.c = nil
+releaseSudog(mysg)
+return true, !closed
 </code></pre>
+<p>}</p>
 <p>golang中的channel接收数据总结:</p>
 <ol>
 <li>如果当前channel里面存在，等待生产的goutine，则消费者goroutine会唤醒第一个阻塞的生产goroutine,并且接收数据。</li>
@@ -452,81 +460,78 @@ close(ch)
 0x00e5 00229 (main.go:17)	ADDQ	$96, SP
 </code></pre>
 <p>执行的函数 closechan</p>
-<pre><code>func closechan(c *hchan) {
-    if c == nil {
-        panic(plainError(&quot;close of nil channel&quot;))
-    }
-
-    lock(&amp;c.lock)
-    // 关闭已经关闭过的channel,会引起异常
-    if c.closed != 0 {
-        unlock(&amp;c.lock)
-        panic(plainError(&quot;close of closed channel&quot;))
-    }
-
-    if raceenabled {
-        callerpc := getcallerpc()
-        racewritepc(c.raceaddr(), callerpc, funcPC(closechan))
-        racerelease(c.raceaddr())
-    }
-
-    c.closed = 1
-
-    var glist gList
-
-    // release all readers
-    // 关闭所有的消费者等待列表
-    for {
-        sg := c.recvq.dequeue()
-        if sg == nil {
-            break
-        }
-        if sg.elem != nil {
-            typedmemclr(c.elemtype, sg.elem)
-            sg.elem = nil
-        }
-        if sg.releasetime != 0 {
-            sg.releasetime = cputicks()
-        }
-        gp := sg.g
-        gp.param = nil
-        if raceenabled {
-            raceacquireg(gp, c.raceaddr())
-        }
-        glist.push(gp)
-    }
-
-    // release all writers (they will panic)
-    // 释放等待的发送者列表
-    for {
-        sg := c.sendq.dequeue()
-        if sg == nil {
-            break
-        }
-        sg.elem = nil
-        if sg.releasetime != 0 {
-            sg.releasetime = cputicks()
-        }
-        gp := sg.g
-        gp.param = nil
-        if raceenabled {
-            raceacquireg(gp, c.raceaddr())
-        }
-        glist.push(gp)
-    }
+<p>func closechan(c *hchan) {
+if c == nil {
+panic(plainError(&ldquo;close of nil channel&rdquo;))
+}</p>
+<pre><code>lock(&amp;c.lock)
+// 关闭已经关闭过的channel,会引起异常
+if c.closed != 0 {
     unlock(&amp;c.lock)
+    panic(plainError(&quot;close of closed channel&quot;))
+}
 
-    // Ready all Gs now that we've dropped the channel lock.
-    for !glist.empty() {
-        gp := glist.pop()
-        gp.schedlink = 0
-        goready(gp, 3)
+if raceenabled {
+    callerpc := getcallerpc()
+    racewritepc(c.raceaddr(), callerpc, funcPC(closechan))
+    racerelease(c.raceaddr())
+}
+
+c.closed = 1
+
+var glist gList
+
+// release all readers
+// 关闭所有的消费者等待列表
+for {
+    sg := c.recvq.dequeue()
+    if sg == nil {
+        break
     }
+    if sg.elem != nil {
+        typedmemclr(c.elemtype, sg.elem)
+        sg.elem = nil
+    }
+    if sg.releasetime != 0 {
+        sg.releasetime = cputicks()
+    }
+    gp := sg.g
+    gp.param = nil
+    if raceenabled {
+        raceacquireg(gp, c.raceaddr())
+    }
+    glist.push(gp)
+}
+
+// release all writers (they will panic)
+// 释放等待的发送者列表
+for {
+    sg := c.sendq.dequeue()
+    if sg == nil {
+        break
+    }
+    sg.elem = nil
+    if sg.releasetime != 0 {
+        sg.releasetime = cputicks()
+    }
+    gp := sg.g
+    gp.param = nil
+    if raceenabled {
+        raceacquireg(gp, c.raceaddr())
+    }
+    glist.push(gp)
+}
+unlock(&amp;c.lock)
+
+// Ready all Gs now that we've dropped the channel lock.
+for !glist.empty() {
+    gp := glist.pop()
+    gp.schedlink = 0
+    goready(gp, 3)
 }
 </code></pre>
+<p>}</p>
 <p>简单小结：就是释放当前channel俩面的两个等待队列列表</p>
-<p>golang再实现channel的过程中，再接收和发送数据过程中，会先加互斥锁来保证chan操作的原子性，内部维护着数据队列，和相关的接收者和发送者队列，通过数据队列的操作，
-来决定当前goroutine是否需要唤醒其他goroutine，或者当前goroutine进行休眠操作。</p>
 
         </div>
 
@@ -572,7 +577,11 @@ close(ch)
 
                     <footer id="footer">
     <div>
+<<<<<<< HEAD
         &copy; 2021 <a href="http://example.org/">Future blog By </a>
+=======
+        &copy; 2021 <a href="http://zzl578472734.github.io/">Future blog By </a>
+>>>>>>> c63dd87e9420f5cdc4244b7b17239721c5bf8357
         
     </div>
     <br />
@@ -616,7 +625,11 @@ close(ch)
         <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
       
       <input type="text" name="q" maxlength="20" placeholder="Search">
+<<<<<<< HEAD
       <input type="hidden" name="sitesearch" value="http://example.org/">
+=======
+      <input type="hidden" name="sitesearch" value="http://zzl578472734.github.io/">
+>>>>>>> c63dd87e9420f5cdc4244b7b17239721c5bf8357
       <button type="submit" class="submit icon-search"></button>
 </form>
     </section>
@@ -626,6 +639,7 @@ close(ch)
 <ul class="widget-list">
     
     <li>
+<<<<<<< HEAD
         <a href="http://example.org/post/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/" title="算法-归并排序">算法-归并排序</a>
     </li>
     
@@ -663,6 +677,45 @@ close(ch)
     
     <li>
         <a href="http://example.org/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Golang 锁的实现">Golang 锁的实现</a>
+=======
+        <a href="http://zzl578472734.github.io/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" title="Golang的垃圾回收">Golang的垃圾回收</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/" title="Golang中的channel">Golang中的channel</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/" title="Golang实现snowflake算法">Golang实现snowflake算法</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Golang 锁的实现">Golang 锁的实现</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%BA%8C-lru%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E7%AD%96%E7%95%A5/" title="Redis-LRU删除数据策略">Redis-LRU删除数据策略</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%B8%80-%E8%BF%87%E6%9C%9F%E9%94%AE%E7%AD%96%E7%95%A5/" title="Redis-过期键删除策略">Redis-过期键删除策略</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/" title="阅读uber的golang规范">阅读uber的golang规范</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/" title="一个频率限制的变更,引发的血案">一个频率限制的变更,引发的血案</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/%E5%B9%B6%E5%8F%91map%E7%9A%84%E5%A4%84%E7%90%86/" title="并发map的处理">并发map的处理</a>
+    </li>
+    
+    <li>
+        <a href="http://zzl578472734.github.io/post/map%E7%9A%84%E5%B9%B6%E5%8F%91%E8%AF%BB%E5%86%99%E6%93%8D%E4%BD%9C/" title="Map的并发读写操作">Map的并发读写操作</a>
+>>>>>>> c63dd87e9420f5cdc4244b7b17239721c5bf8357
     </li>
     
 </ul>
@@ -674,6 +727,7 @@ close(ch)
         <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
 <ul class="widget-list">
     
+<<<<<<< HEAD
     <li><a href="http://example.org/categories/golang/">golang (11)</a></li>
     
     <li><a href="http://example.org/categories/redis/">redis (2)</a></li>
@@ -689,6 +743,13 @@ close(ch)
     <li><a href="http://example.org/categories/%E7%AC%94%E8%AE%B0/">笔记 (1)</a></li>
     
     <li><a href="http://example.org/categories/%E7%AE%97%E6%B3%95/">算法 (3)</a></li>
+=======
+    <li><a href="http://zzl578472734.github.io/categories/golang/">golang (11)</a></li>
+    
+    <li><a href="http://zzl578472734.github.io/categories/redis/">redis (2)</a></li>
+    
+    <li><a href="http://zzl578472734.github.io/categories/%E5%B0%8F%E8%AF%B4/">小说 (1)</a></li>
+>>>>>>> c63dd87e9420f5cdc4244b7b17239721c5bf8357
     
 </ul>
     </section>
@@ -697,6 +758,7 @@ close(ch)
         <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
 <div class="tagcloud">
     
+<<<<<<< HEAD
     <a href="http://example.org/tags/golang/">golang</a>
     
     <a href="http://example.org/tags/redis/">redis</a>
@@ -712,6 +774,13 @@ close(ch)
     <a href="http://example.org/tags/%E7%AC%94%E8%AE%B0/">笔记</a>
     
     <a href="http://example.org/tags/%E7%AE%97%E6%B3%95/">算法</a>
+=======
+    <a href="http://zzl578472734.github.io/tags/golang/">golang</a>
+    
+    <a href="http://zzl578472734.github.io/tags/redis/">redis</a>
+    
+    <a href="http://zzl578472734.github.io/tags/%E4%B8%9C%E9%87%8E%E5%9C%AD%E5%90%BE/">东野圭吾</a>
+>>>>>>> c63dd87e9420f5cdc4244b7b17239721c5bf8357
     
 </div>
     </section>
@@ -721,7 +790,11 @@ close(ch)
     <section class="widget">
         <h3 class="widget-title">其它</h3>
         <ul class="widget-list">
+<<<<<<< HEAD
             <li><a href="http://example.org/index.xml">文章 RSS</a></li>
+=======
+            <li><a href="http://zzl578472734.github.io/index.xml">文章 RSS</a></li>
+>>>>>>> c63dd87e9420f5cdc4244b7b17239721c5bf8357
         </ul>
     </section>
 </div>
