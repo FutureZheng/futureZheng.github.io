@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>Golang处理http请求 | Future blog</title>
+    <meta property="og:title" content="Golang处理http请求 - Future blog">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-06-21T18:02:08&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-06-21T18:02:08&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Golang处理http请求">
+        
+    <meta name="author" content="">
+    <meta property="og:url" content="http://example.org/post/golang%E5%A4%84%E7%90%86http%E8%AF%B7%E6%B1%82/">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="http://example.org/">
+                        Future blog
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="http://example.org/">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Golang处理http请求</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年6月21日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <h2 id="golang-是如何处理http请求">golang 是如何处理http请求？</h2>
+<p>go 建立一个标准的 http server</p>
+<pre><code>func main() {
+    // 注册一个路由处理函数
+    http.HandleFunc(&quot;/&quot;, func(w http.ResponseWriter, r *http.Request) {
+        _, err := w.Write([]byte(&quot;hello,world&quot;))
+        if err != nil{
+            panic(err)
+        }
+        return
+    })
+    // 启动本机127.0.0.1：80服务端口
+    err := http.ListenAndServe(&quot;127.0.0.1:80&quot;, nil)
+    if err != nil {
+        panic(err)
+    }
+}
+</code></pre>
+<h2 id="服务器是怎么处理路由函数的呢">服务器是怎么处理路由函数的呢？</h2>
+<ol>
+<li>路由和处理函数的注册。</li>
+<li>接收网的tcp请求</li>
+<li>启动一个协程来处理函数。</li>
+</ol>
+<h3 id="1路由和处理函数的注册">1.路由和处理函数的注册</h3>
+<p>通过跟踪http包的HandleFunc方法，可以看到。系统使用包内置的多路复用器注册注册了函数。</p>
+<pre><code>// 多路复用器的结构实现
+type ServeMux struct {
+    mu    sync.RWMutex
+    m     map[string]muxEntry           用map来存储路径地址
+    es    []muxEntry // slice of entries sorted from longest to shortest.
+    hosts bool       // whether any patterns contain hostnames
+}
+</code></pre>
+<p>调用函数 HandleFunc</p>
+<pre><code>func (mux *ServeMux) HandleFunc(pattern string, handler func(ResponseWriter, *Request)) {
+    if handler == nil {
+        panic(&quot;http: nil handler&quot;)
+    }
+    mux.Handle(pattern, HandlerFunc(handler))
+}
+</code></pre>
+<p>特别注意一下：</p>
+<p>这边再注册到多路复用器之前，将用户自定义的handler函数转化成了HandlerFunc的结构体类型</p>
+<pre><code>mux.Handle(pattern, HandlerFunc(handler))
+</code></pre>
+<p>这边提前说明下，结构体 HandlerFunc 实现了 ServeHTTP 方法,当前方法会执行用户自定义的方法</p>
+<pre><code>type HandlerFunc func(ResponseWriter, *Request)
+
+func (f HandlerFunc) ServeHTTP(w ResponseWriter, r *Request) {
+    f(w, r)
+}
+</code></pre>
+<p>同时这边说明一下,这个结构体，HandlerFunc函数实现了Handler接口</p>
+<pre><code>type Handler interface {
+    ServeHTTP(ResponseWriter, *Request)
+}
+</code></pre>
+<p>下面这段是处理函数，注册路由和函数处理</p>
+<pre><code>// 注册路径和函数
+func (mux *ServeMux) Handle(pattern string, handler Handler) {
+    mux.mu.Lock()
+    defer mux.mu.Unlock()
+
+    if pattern == &quot;&quot; {
+        panic(&quot;http: invalid pattern&quot;)
+    }
+    if handler == nil {
+        panic(&quot;http: nil handler&quot;)
+    }
+    if _, exist := mux.m[pattern]; exist {
+        panic(&quot;http: multiple registrations for &quot; + pattern)
+    }
+
+    // 初始化map对象    
+    if mux.m == nil {
+        mux.m = make(map[string]muxEntry)
+    }
+
+    // 注册到map当中
+    e := muxEntry{h: handler, pattern: pattern}
+    mux.m[pattern] = e
+
+    if pattern[len(pattern)-1] == '/' {
+        mux.es = appendSorted(mux.es, e)
+    }
+
+    if pattern[0] != '/' {
+        mux.hosts = true
+    }
+}
+</code></pre>
+<p>上面看到了，go标准的http包底层使用了map来绑定路由和处理函数之间的关系，那么接下来看下服务启动的时候，go又是怎么处理请求的。</p>
+<h3 id="2处理tcp连接请求">2.处理tcp连接请求</h3>
+<p>让我们跟踪下代码</p>
+<pre><code>http.ListenAndServe(&quot;127.0.0.1:80&quot;, nil)
+</code></pre>
+<p>底层使用socket建立了一个连接</p>
+<pre><code>// 使用socket建立了一个tcp连接信息
+ln, err := net.Listen(&quot;tcp&quot;, addr)
+
+// net.Listen函数最终调用的函数信息
+fd, err := internetSocket(ctx, sl.network, laddr, nil, syscall.SOCK_STREAM, 0, &quot;listen&quot;, sl.ListenConfig.Control)
+</code></pre>
+<p>接着往下看，go的http包是怎么处理连接的。</p>
+<pre><code>for {
+    // 接收客户端的连接请求
+    rw, err := l.Accept()
+    if err != nil {
+        select {
+        case &lt;-srv.getDoneChan():
+            return ErrServerClosed
+        default:
+        }
+        if ne, ok := err.(net.Error); ok &amp;&amp; ne.Temporary() {
+            if tempDelay == 0 {
+                tempDelay = 5 * time.Millisecond
+            } else {
+                tempDelay *= 2
+            }
+            if max := 1 * time.Second; tempDelay &gt; max {
+                tempDelay = max
+            }
+            srv.logf(&quot;http: Accept error: %v; retrying in %v&quot;, err, tempDelay)
+            time.Sleep(tempDelay)
+            continue
+        }
+        return err
+    }
+    connCtx := ctx
+    if cc := srv.ConnContext; cc != nil {
+        connCtx = cc(connCtx, rw)
+        if connCtx == nil {
+            panic(&quot;ConnContext returned nil&quot;)
+        }
+    }
+    tempDelay = 0
+    c := srv.newConn(rw)
+    c.setState(c.rwc, StateNew) // before Serve can return
+    // 启动一个goroutine来处理接收到的http请求
+    go c.serve(connCtx)
+}
+</code></pre>
+<p>go 使用了一个巨大的for 循环来处理所有的连接请求。</p>
+<pre><code>for {
+    // ...
+}
+</code></pre>
+<p>再for循环里面，go调用了l.Accept函数，来接收连接信息</p>
+<pre><code>for {
+        // 接收客户端的连接请求
+        rw, err := l.Accept()
+        if err != nil {
+            select {
+            case &lt;-srv.getDoneChan():
+                return ErrServerClosed
+            default:
+            }
+            
+            // 如果再go服务运行期间，出现了网络问题，那么进行指数退避重试
+            // 哈哈，发现新大陆的样子
+            if ne, ok := err.(net.Error); ok &amp;&amp; ne.Temporary() {
+                if tempDelay == 0 {
+                    tempDelay = 5 * time.Millisecond
+                } else {
+                    tempDelay *= 2
+                }
+                if max := 1 * time.Second; tempDelay &gt; max {
+                    tempDelay = max
+                }
+                srv.logf(&quot;http: Accept error: %v; retrying in %v&quot;, err, tempDelay)
+                time.Sleep(tempDelay)
+                continue
+            }
+            return err
+        }
+        // ...
+    }
+</code></pre>
+<p>accept函数，最终调用的，为操作系统socket建立的时候，提供的函数accept，使用man accept命令，查看一下函数的帮助手册</p>
+<pre><code>NAME
+       accept, accept4 - accept a connection on a socket
+RETURN VALUE
+       On success, these system calls return a nonnegative integer that is a file descriptor for the accepted socket.  On error, -1 is returned, and errno is set appropriately.
+</code></pre>
+<p>如果存在可用的连接（已经完成了三次握手的tcp连接，连接信息会被放置到操作系统的accept队列里面），函数会返回当前连接的文件描述符。</p>
+<p>然后如果出现网络问题，这边采用了指数退避的方式进行多次的重试，减少因为异常网络波动导致的服务退出等。</p>
+<p>接下来就是处理连接信息相关的内容。</p>
+<pre><code>func (srv *Server) Serve(l net.Listener) error {
+    baseCtx := context.Background()
+    if srv.BaseContext != nil {
+        baseCtx = srv.BaseContext(origListener)
+        if baseCtx == nil {
+            panic(&quot;BaseContext returned a nil context&quot;)
+        }
+    }
+
+    ctx := context.WithValue(baseCtx, ServerContextKey, srv)
+    for {
+    
+        // 。。。
+                    
+        // 建立客户端连接上下文，创建一个协程来处理当前连接信息
+        connCtx := ctx
+        if cc := srv.ConnContext; cc != nil {
+            connCtx = cc(connCtx, rw)
+            if connCtx == nil {
+                panic(&quot;ConnContext returned nil&quot;)
+            }
+        }
+        tempDelay = 0
+        c := srv.newConn(rw)
+        c.setState(c.rwc, StateNew) // before Serve can return
+        // 启动一个goroutine来处理接收到的http请求
+        go c.serve(connCtx)
+    }
+}
+</code></pre>
+<p>综上所述，go底层也是借助操作系统socket建立服务来处理连接，通过优化了网络异常和使用多协程处理请求连接的方式，来优化处理。</p>
+<h3 id="3-启动一个协程来处理函数">3. 启动一个协程来处理函数。</h3>
+<p>处理函数</p>
+<pre><code>// 启动一个协程来处理当前客户端的连接
+go c.serve(connCtx)
+</code></pre>
+<p>serve 函数处理中，再for循环中，会调用函数进行处理</p>
+<pre><code>for {
+        w, err := c.readRequest(ctx)
+        if c.r.remain != c.server.initialReadLimitSize() {
+            // If we read any bytes off the wire, we're active.
+            c.setState(c.rwc, StateActive)
+        }
+        if err != nil {
+            const errorHeaders = &quot;\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n&quot;
+
+            switch {
+            case err == errTooLarge:
+                // Their HTTP client may or may not be
+                // able to read this if we're
+                // responding to them and hanging up
+                // while they're still writing their
+                // request. Undefined behavior.
+                const publicErr = &quot;431 Request Header Fields Too Large&quot;
+                fmt.Fprintf(c.rwc, &quot;HTTP/1.1 &quot;+publicErr+errorHeaders+publicErr)
+                c.closeWriteAndWait()
+                return
+
+            case isUnsupportedTEError(err):
+                // Respond as per RFC 7230 Section 3.3.1 which says,
+                //      A server that receives a request message with a
+                //      transfer coding it does not understand SHOULD
+                //      respond with 501 (Unimplemented).
+                code := StatusNotImplemented
+
+                // We purposefully aren't echoing back the transfer-encoding's value,
+                // so as to mitigate the risk of cross side scripting by an attacker.
+                fmt.Fprintf(c.rwc, &quot;HTTP/1.1 %d %s%sUnsupported transfer encoding&quot;, code, StatusText(code), errorHeaders)
+                return
+
+            case isCommonNetReadError(err):
+                return // don't reply
+
+            default:
+                publicErr := &quot;400 Bad Request&quot;
+                if v, ok := err.(badRequestError); ok {
+                    publicErr = publicErr + &quot;: &quot; + string(v)
+                }
+
+                fmt.Fprintf(c.rwc, &quot;HTTP/1.1 &quot;+publicErr+errorHeaders+publicErr)
+                return
+            }
+        }
+
+        // Expect 100 Continue support
+        req := w.req
+        if req.expectsContinue() {
+            if req.ProtoAtLeast(1, 1) &amp;&amp; req.ContentLength != 0 {
+                // Wrap the Body reader with one that replies on the connection
+                req.Body = &amp;expectContinueReader{readCloser: req.Body, resp: w}
+                w.canWriteContinue.setTrue()
+            }
+        } else if req.Header.get(&quot;Expect&quot;) != &quot;&quot; {
+            w.sendExpectationFailed()
+            return
+        }
+
+        c.curReq.Store(w)
+
+        if requestBodyRemains(req.Body) {
+            registerOnHitEOF(req.Body, w.conn.r.startBackgroundRead)
+        } else {
+            w.conn.r.startBackgroundRead()
+        }
+
+        // 执行用户自定义的方法
+        serverHandler{c.server}.ServeHTTP(w, w.req)
+        
+        w.cancelCtx()
+        if c.hijacked() {
+            return
+        }
+        w.finishRequest()
+        if !w.shouldReuseConnection() {
+            if w.requestBodyLimitHit || w.closedRequestBodyEarly() {
+                c.closeWriteAndWait()
+            }
+            return
+        }
+        c.setState(c.rwc, StateIdle)
+        c.curReq.Store((*response)(nil))
+
+        if !w.conn.server.doKeepAlives() {
+            // We're in shutdown mode. We might've replied
+            // to the user without &quot;Connection: close&quot; and
+            // they might think they can send another
+            // request, but such is life with HTTP/1.1.
+            return
+        }
+
+        if d := c.server.idleTimeout(); d != 0 {
+            c.rwc.SetReadDeadline(time.Now().Add(d))
+            if _, err := c.bufr.Peek(4); err != nil {
+                return
+            }
+        }
+        c.rwc.SetReadDeadline(time.Time{})
+}
+</code></pre>
+<p>看到一个关键的方法</p>
+<pre><code>// 调用处理函数信息
+serverHandler{c.server}.ServeHTTP(w, w.req)
+</code></pre>
+<p>当前方法调用了serverHandler结构体的 ServeHTTP 函数</p>
+<pre><code>func (sh serverHandler) ServeHTTP(rw ResponseWriter, req *Request) {
+    // 因为 Handler再注册路由的时候初始胡为DefaultServeMux
+    handler := sh.srv.Handler
+    if handler == nil {
+        handler = DefaultServeMux
+    }
+    if req.RequestURI == &quot;*&quot; &amp;&amp; req.Method == &quot;OPTIONS&quot; {
+        handler = globalOptionsHandler{}
+    }
+    // 调用 DefaultServeMux 结构，执行ServeHTTP方法。
+    handler.ServeHTTP(rw, req)
+}
+
+// DefaultServeMux结构体，实现的 ServeHTTP 方法
+func (mux *ServeMux) ServeHTTP(w ResponseWriter, r *Request) {
+    // 处理http请求的时候调用
+    if r.RequestURI == &quot;*&quot; {
+        if r.ProtoAtLeast(1, 1) {
+            w.Header().Set(&quot;Connection&quot;, &quot;close&quot;)
+        }
+        w.WriteHeader(StatusBadRequest)
+        return
+    }
+	
+    // 调用用户的自定义函数
+    h, _ := mux.Handler(r)
+    h.ServeHTTP(w, r)
+}
+</code></pre>
+<p>这边会根据路由信息，获取注册到多路复用器上面的路由和处理函数，然后调用函数进行处理</p>
+<pre><code>// 调用用户的自定义函数
+h, _ := mux.Handler(r)
+h.ServeHTTP(w, r)
+</code></pre>
+<p>函数再注册路由的时候，已经将对应的用户自定义的方法转化为 HandlerFunc，因为结构体HandlerFunc实现了ServeHTTP方法
+综上所述，当前的方法，会执行用户自定义的处理函数。</p>
+<h2 id="总结一下">总结一下：</h2>
+<ol>
+<li>golang 使用 map 来注册路由和处理函数。</li>
+<li>golang 使用操作系统的socket来建立tcp服务，并且用指数退避来处理网络请求问题。</li>
+<li>golang 为每一个到来的连接请求启用一个协程来处理。</li>
+</ol>
+
+        </div>
+
+        
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/">Golang的垃圾回收</a></li>
+        
+        <li><a href="/post/golang%E4%B8%AD%E7%9A%84channel/">Golang中的channel</a></li>
+        
+        <li><a href="/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/">Golang实现snowflake算法</a></li>
+        
+        <li><a href="/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/">Golang 锁的实现</a></li>
+        
+        <li><a href="/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/">阅读uber的golang规范</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/tags/golang'>golang</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="http://example.org/">Future blog By </a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="http://example.org/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="http://example.org/post/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/" title="算法-归并排序">算法-归并排序</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/%E8%B0%88%E8%B0%88%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B/" title="谈谈我认为的技术选型">谈谈我认为的技术选型</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" title="算法-二分查找">算法-二分查找</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/golang%E5%A4%84%E7%90%86http%E8%AF%B7%E6%B1%82/" title="Golang处理http请求">Golang处理http请求</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%BF%90%E7%AE%97/" title="二进制运算">二进制运算</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/%E9%9B%B6copy%E6%8A%80%E6%9C%AF/" title="零拷贝技术">零拷贝技术</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" title="Golang的垃圾回收">Golang的垃圾回收</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/golang%E4%B8%AD%E7%9A%84channel/" title="Golang中的channel">Golang中的channel</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/" title="Golang实现snowflake算法">Golang实现snowflake算法</a>
+    </li>
+    
+    <li>
+        <a href="http://example.org/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Golang 锁的实现">Golang 锁的实现</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="http://example.org/categories/golang/">golang (11)</a></li>
+    
+    <li><a href="http://example.org/categories/redis/">redis (2)</a></li>
+    
+    <li><a href="http://example.org/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统 (2)</a></li>
+    
+    <li><a href="http://example.org/categories/%E6%9D%82%E8%B0%88/">杂谈 (1)</a></li>
+    
+    <li><a href="http://example.org/categories/%E6%9E%B6%E6%9E%84%E4%B9%8B%E9%81%93/">架构之道 (1)</a></li>
+    
+    <li><a href="http://example.org/categories/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列 (1)</a></li>
+    
+    <li><a href="http://example.org/categories/%E7%AC%94%E8%AE%B0/">笔记 (1)</a></li>
+    
+    <li><a href="http://example.org/categories/%E7%AE%97%E6%B3%95/">算法 (3)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="http://example.org/tags/golang/">golang</a>
+    
+    <a href="http://example.org/tags/redis/">redis</a>
+    
+    <a href="http://example.org/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a>
+    
+    <a href="http://example.org/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="http://example.org/tags/%E6%9E%B6%E6%9E%84%E4%B9%8B%E9%81%93/">架构之道</a>
+    
+    <a href="http://example.org/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列</a>
+    
+    <a href="http://example.org/tags/%E7%AC%94%E8%AE%B0/">笔记</a>
+    
+    <a href="http://example.org/tags/%E7%AE%97%E6%B3%95/">算法</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="http://example.org/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
