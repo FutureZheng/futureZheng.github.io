@@ -27,6 +27,8 @@
     
     
     
+        <link href="https://cdn.bootcdn.net/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" rel="stylesheet">
+    
     
     
     
@@ -62,6 +64,222 @@
                 <div class="col-8" id="main">
                     
 <div class="res-cons">
+    
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/" title="Golang中的channel">Golang中的channel</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年5月14日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            channel 作为golang中用于goroutine之间的通讯的方式，经常会听到一句话，就是“不要通过共享内存来通信，而实通过通信来共享内存”。
+总结一下：golang 是怎么处理发送数据到channel中的，。
+今天就来好好聊一聊channel吧。……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/">阅读全文</a></p>
+    </article>
+    
+    
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/" title="Golang实现snowflake算法">Golang实现snowflake算法</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年5月13日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            snowflake算法 雪花算法：一种分布式id生成算法规则,生成的分布式id规则上，随着时间的增加，不会出现重复。
+算法生成的格式
+0-00000000000000000000000000000000000000000-0000000000-000000000000
+分为4个部分……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/">阅读全文</a></p>
+    </article>
+    
+    
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Golang 锁的实现">Golang 锁的实现</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年5月13日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            golang中，有一句话很是体现除了它的编程哲学，“不要用共享欸村来通信，而是通过通信来共享数据”。
+在多线程的世界里面，常常需要多个线程共同访问同一个内存代码或者变量，也就是一个临界区，为此，需要给临界区上锁操作。通过加锁，释放锁来调节进出的线程。 在golang中，较为提倡的方式是通过通道channel,来进行多个协程之间的数据通讯，当然，golang 也是内置了锁的支持操作，也可以实现多线程访问临界区的方式。
+// 内置锁的结构体 type Mutex struct { state int32 // 锁的状态 sema uint32 // 信号量 } // 定义了锁的接口，需要有加锁和解锁操作。 type Locker interface { Lock() Unlock() }  看锁定义的结构，可以看出，golang锁的实现也是基于信号量的，也即（二值信号量），信号量的值，非零既一。……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/">阅读全文</a></p>
+    </article>
+    
+    
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/%E7%AE%97%E6%B3%95-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/" title="算法-快速排序">算法-快速排序</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年5月10日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/%E7%AE%97%E6%B3%95'>算法</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            最近再看算法中的分治思想，简单的理解就是，分而治之，比如这次学习的快排，就是将一个大的数组，分为一个基准值，和一个小于基准值的数组和一个大于基准值的数组。
+然后再次对两个数组，进行相同的快速排序，直至所有的数组达到算法的临界条件，排序结束.
+一。 快排的注意点  对比基准元素的选择。 数组的长度小于等于 1 的临界条件判断。  二。分析一下排序的流程 比如给定一个数组……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/%E7%AE%97%E6%B3%95-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/">阅读全文</a></p>
+    </article>
+    
+    
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%BA%8C-lru%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E7%AD%96%E7%95%A5/" title="Redis-LRU删除数据策略">Redis-LRU删除数据策略</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年5月8日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/redis'>redis</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            除了上一篇文章介绍的redis两种删除key的方式以外，针对内存已经占满的情况下，redis还有一种额外的方式，处理内存数据。
+1.内存相关的配置 在redis的配置文件当中，根内存相关的参数配置有下面的几个相关的参数信息
+ maxmemory : 允许redis使用的最大内存数据,默认为0，表示不开启内存淘汰 maxmemory-policy ： 内存淘汰的策略.……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%BA%8C-lru%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E7%AD%96%E7%95%A5/">阅读全文</a></p>
+    </article>
+    
+    
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%B8%80-%E8%BF%87%E6%9C%9F%E9%94%AE%E7%AD%96%E7%95%A5/" title="Redis-过期键删除策略">Redis-过期键删除策略</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年5月7日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/redis'>redis</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            redis的键删除策略 在使用redis的时候，基本上会给指定的缓存设置过期时间，让缓存自动过期。
+总结了：
+ 惰性删除。在查询的时候，如果key过期了，就进行删除操作。 定期删除。每经过一段时间，后台任务自动删除过期的数据。  1.……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%B8%80-%E8%BF%87%E6%9C%9F%E9%94%AE%E7%AD%96%E7%95%A5/">阅读全文</a></p>
+    </article>
+    
+    
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/" title="阅读uber的golang规范">阅读uber的golang规范</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年4月29日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            阅读uber的go规范，原文地址 https://github.com/uber-go/guide/blob/master/style.md
+下面是一些我根据自己实际情况总结出来的，建议查看原文，根据自己的情况，看看是否也出现了类似的情况
+1. 第一条规则，也是uber的第一条规则，特别提出来。 You almost never need a pointer to an interface.……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/">阅读全文</a></p>
+    </article>
+    
+    
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/" title="一个频率限制的变更,引发的血案">一个频率限制的变更,引发的血案</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年4月28日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/%E7%AC%94%E8%AE%B0'>笔记</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            对接过微信现金红包的同学应该知道，微信官方是有限制接口的调用频率的。
+重点说三遍。这块微信限制改成了 30/秒，30/秒，30/秒。……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/">阅读全文</a></p>
+    </article>
+    
     
     
     <article class="post">
@@ -117,135 +335,6 @@ fatal error: concurrent map read and map write  2.……
     
     
     
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://zzl578472734.github.io/post/golang%E7%9A%84%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/" title="Golang的函数式编程">Golang的函数式编程</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2021年4月16日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            一。我理解的函数式编程
-今天来聊一聊什么呢？golang的函数式编程吧.
-如果你或多或少看过golang一些软件包的实现方式，就能大体看出端倪。
-比如golang中，grpc客户端建立server的连接，使用的拨号函数.
-// 函数签名 func Dial(target string, opts .……
-        </div>
-        <p class="readmore"><a href="https://zzl578472734.github.io/post/golang%E7%9A%84%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B/">阅读全文</a></p>
-    </article>
-    
-    
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://zzl578472734.github.io/post/%E4%B8%80%E6%9C%B5%E9%BB%84%E8%89%B2%E7%9A%84%E7%89%B5%E7%89%9B%E8%8A%B1/" title="你知道什么是梦幻花？">你知道什么是梦幻花？</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2021年4月16日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/%E5%B0%8F%E8%AF%B4'>小说</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            你见过黄色的牵牛花吗？
-这是一个不能触及的问题，因为它带来的是一连串的灾运，从50年前的持刀杀人犯为开端铺垫引起的一系列的故事。
-苍太从小就感受到父亲真嗣和哥哥要介的冷落。
-花会认识的女孩子孝美，再上了初中后，突然消失，断了联系。……
-        </div>
-        <p class="readmore"><a href="https://zzl578472734.github.io/post/%E4%B8%80%E6%9C%B5%E9%BB%84%E8%89%B2%E7%9A%84%E7%89%B5%E7%89%9B%E8%8A%B1/">阅读全文</a></p>
-    </article>
-    
-    
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://zzl578472734.github.io/post/golang%E7%9A%84error%E5%8C%85/" title="Golang的Errors包">Golang的Errors包</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2021年1月30日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            errors包 1. 主要的包内结构体定义 标准包定义的结构体信息
-type errorString struct { s string }  内置一个错误信息的接口提，通过一个字符串来表示相关的错误信息……
-        </div>
-        <p class="readmore"><a href="https://zzl578472734.github.io/post/golang%E7%9A%84error%E5%8C%85/">阅读全文</a></p>
-    </article>
-    
-    
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://zzl578472734.github.io/post/golang%E7%9A%84log%E5%8C%85/" title="Golang的Log包">Golang的Log包</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2020年12月9日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            log包 1. 主要的包内结构体定义 标准包定义的结构体信息
-type Logger struct { // 原子锁 mu sync.……
-        </div>
-        <p class="readmore"><a href="https://zzl578472734.github.io/post/golang%E7%9A%84log%E5%8C%85/">阅读全文</a></p>
-    </article>
-    
-    
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://zzl578472734.github.io/post/rabbitmq/" title="消息中间件-rabbitMq">消息中间件-rabbitMq</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2020年8月10日
-        </date>
-        
-        <div class="post-content">
-            为什么使用队列，也是老生常谈的问题了，异步，削峰，解耦。 由于最近一直在看rabbitMq相关的内容，加上工作中，也是采用的rabbitMq作为消息中间件的，在闲暇之余写下了这篇文章，也是对最近学习的一次总结。
-谈及rabbitMq，那就要先说到AMQP协议了，简单的说来，AMQP就是一套消息通讯协议的标准。比如早期的ActiveMq,和现在rabbitMq。
-先说下为什么选型的时候用的rabbitMq? 当然，这个基于下面三点考虑，……
-        </div>
-        <p class="readmore"><a href="https://zzl578472734.github.io/post/rabbitmq/">阅读全文</a></p>
-    </article>
-    
-    
-    
 
 
 
@@ -265,7 +354,15 @@ type Logger struct { // 原子锁 mu sync.……
         <a href="https://zzl578472734.github.io/post/page/2/">2</a>
     </li>
     
+    <li >
+        <a href="https://zzl578472734.github.io/post/page/3/">3</a>
+    </li>
+    
 
+    
+    <li class="next">
+        <a href="https://zzl578472734.github.io/post/page/3/">下一页</a>
+    </li>
     
 </ol>
 
@@ -319,6 +416,34 @@ type Logger struct { // 原子锁 mu sync.……
 <ul class="widget-list">
     
     <li>
+        <a href="https://zzl578472734.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BB%A4%E7%89%8C%E6%A1%B6/" title="分布式限流-分布式令牌桶">分布式限流-分布式令牌桶</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E5%8D%95%E6%9C%BA%E7%9A%84%E4%BB%A4%E7%89%8C%E6%A1%B6%E4%BD%BF%E7%94%A8/" title="分布式限流-单机的令牌桶使用">分布式限流-单机的令牌桶使用</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E4%BB%8E%E5%8D%95%E6%9C%BA%E4%BB%A4%E7%89%8C%E6%A1%B6%E5%BC%80%E5%A7%8B/" title="分布式限流-从接口访问开始说起">分布式限流-从接口访问开始说起</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/" title="算法-归并排序">算法-归并排序</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E8%B0%88%E8%B0%88%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B/" title="谈谈我认为的技术选型">谈谈我认为的技术选型</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" title="算法-二分查找">算法-二分查找</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/golang%E5%A4%84%E7%90%86http%E8%AF%B7%E6%B1%82/" title="Golang处理http请求">Golang处理http请求</a>
+    </li>
+    
+    <li>
         <a href="https://zzl578472734.github.io/post/%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%BF%90%E7%AE%97/" title="二进制运算">二进制运算</a>
     </li>
     
@@ -328,34 +453,6 @@ type Logger struct { // 原子锁 mu sync.……
     
     <li>
         <a href="https://zzl578472734.github.io/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" title="Golang的垃圾回收">Golang的垃圾回收</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/" title="Golang中的channel">Golang中的channel</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/" title="Golang实现snowflake算法">Golang实现snowflake算法</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Golang 锁的实现">Golang 锁的实现</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%BA%8C-lru%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E7%AD%96%E7%95%A5/" title="Redis-LRU删除数据策略">Redis-LRU删除数据策略</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%B8%80-%E8%BF%87%E6%9C%9F%E9%94%AE%E7%AD%96%E7%95%A5/" title="Redis-过期键删除策略">Redis-过期键删除策略</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/" title="阅读uber的golang规范">阅读uber的golang规范</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/" title="一个频率限制的变更,引发的血案">一个频率限制的变更,引发的血案</a>
     </li>
     
 </ul>
@@ -369,13 +466,21 @@ type Logger struct { // 原子锁 mu sync.……
     
     <li><a href="https://zzl578472734.github.io/categories/golang/">golang (11)</a></li>
     
-    <li><a href="https://zzl578472734.github.io/categories/kafaka/">kafaka (1)</a></li>
-    
     <li><a href="https://zzl578472734.github.io/categories/redis/">redis (2)</a></li>
     
-    <li><a href="https://zzl578472734.github.io/categories/%E5%B0%8F%E8%AF%B4/">小说 (1)</a></li>
+    <li><a href="https://zzl578472734.github.io/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统 (3)</a></li>
     
     <li><a href="https://zzl578472734.github.io/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统 (2)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E6%9D%82%E8%B0%88/">杂谈 (1)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E6%9E%B6%E6%9E%84%E4%B9%8B%E9%81%93/">架构之道 (1)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列 (1)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E7%AC%94%E8%AE%B0/">笔记 (1)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E7%AE%97%E6%B3%95/">算法 (3)</a></li>
     
 </ul>
     </section>
@@ -388,9 +493,19 @@ type Logger struct { // 原子锁 mu sync.……
     
     <a href="https://zzl578472734.github.io/tags/redis/">redis</a>
     
-    <a href="https://zzl578472734.github.io/tags/%E4%B8%9C%E9%87%8E%E5%9C%AD%E5%90%BE/">东野圭吾</a>
+    <a href="https://zzl578472734.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a>
     
     <a href="https://zzl578472734.github.io/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E6%9E%B6%E6%9E%84%E4%B9%8B%E9%81%93/">架构之道</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E7%AC%94%E8%AE%B0/">笔记</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E7%AE%97%E6%B3%95/">算法</a>
     
 </div>
     </section>

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-cn">
 <head>
-	<meta name="generator" content="Hugo 0.80.0" />
+	<meta name="generator" content="Hugo 0.79.0" />
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -23,6 +23,8 @@
 
     
     
+    
+        <link href="https://cdn.bootcdn.net/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" rel="stylesheet">
     
     
     
@@ -65,6 +67,177 @@
     <article class="post">
         <header>
             <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BB%A4%E7%89%8C%E6%A1%B6/" title="分布式限流-分布式令牌桶">分布式限流-分布式令牌桶</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年7月26日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F'>分布式系统</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            一。单体应用带来的问题？ 之前说到了单机令牌桶的使用，实现上面来说相对简单，但是实际项目开发的时候，考虑项目扩展，都会采用部署多个应用，比如部署多个web项目，或者将应拆分为多个微服务的方式进行部署。
+这就要求了，如何确保多个应用请求总和加起来不超过限制。……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BB%A4%E7%89%8C%E6%A1%B6/">阅读全文</a></p>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/%E5%8D%95%E6%9C%BA%E7%9A%84%E4%BB%A4%E7%89%8C%E6%A1%B6%E4%BD%BF%E7%94%A8/" title="分布式限流-单机的令牌桶使用">分布式限流-单机的令牌桶使用</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年7月21日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F'>分布式系统</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            一。在项目中使用令牌桶 根据上一篇文章《分布式限流-从接口访问开始说起》所述，为了控制接口的访问频率，我们采用限流算法来限制请求，根据发展的趋势和通用性，我们采用令牌桶来处理请求。
+首先我们会初始化一个令牌桶信息。
+我这边使用的是golang语言，在三方扩展包中，有golang.org/x/time/rate 直接支持了令牌桶.……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/%E5%8D%95%E6%9C%BA%E7%9A%84%E4%BB%A4%E7%89%8C%E6%A1%B6%E4%BD%BF%E7%94%A8/">阅读全文</a></p>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/%E4%BB%8E%E5%8D%95%E6%9C%BA%E4%BB%A4%E7%89%8C%E6%A1%B6%E5%BC%80%E5%A7%8B/" title="分布式限流-从接口访问开始说起">分布式限流-从接口访问开始说起</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年7月21日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F'>分布式系统</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            一。从接口的访问开始说起 在接入一些第三方应用的时候，很多第三方应用，为了保证自身服务的稳定性和安全性，都会对请求来源机器做一些ip白名单处理，可以防范一些非法用户请求，但是，即使信任了白名单机器，对于自身系统，也还是可能因为白名单用户请求接口调用导致自身系统的不稳定，或者频繁调用一些重要的业务（转账，发钱等）。
+这些重要业务的调用，都伴随着严格的鉴权系统，并且还会增加一些访问次数的限制。
+1. 百度机器人对话接口 比如最近我在工作中，调用的百度机器人的对话聊天接口……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/%E4%BB%8E%E5%8D%95%E6%9C%BA%E4%BB%A4%E7%89%8C%E6%A1%B6%E5%BC%80%E5%A7%8B/">阅读全文</a></p>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/" title="算法-归并排序">算法-归并排序</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年7月13日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/%E7%AE%97%E6%B3%95'>算法</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            一直我都不是特别了解归并排序，或者没有太过去关注这个排序算法，导致对于它来说，感到陌生并且生疏，今天就抽空来整理一下这个排序算法的优点和特性。
+以一个简单的例子来看，给定一个数组 data = [8,4,5,7,1,3,6,2]……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/">阅读全文</a></p>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/%E8%B0%88%E8%B0%88%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B/" title="谈谈我认为的技术选型">谈谈我认为的技术选型</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年7月12日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/%E6%9E%B6%E6%9E%84%E4%B9%8B%E9%81%93'>架构之道</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            再我过往做技术的这些年里面，类似这种指导性的文章，我是没有过多考虑的整理成文章内容的，但是随着工作年限的增加和这几年技术发展愈发的迅速，发现每一种技术都有它产生的道理，或者说是为了解决某一类的问题，并且相同的问题可能有多种技术或者软件的解决方案，
+比如你所熟悉的消息队列，就有activemq,rabbitmq,rocketmq,kafkal等等.
+如何在这么多可选方案中选择出最合适自己的最佳方案，就是“技术选型”。……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/%E8%B0%88%E8%B0%88%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B/">阅读全文</a></p>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" title="算法-二分查找">算法-二分查找</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年7月5日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/%E7%AE%97%E6%B3%95'>算法</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            1. 二分查找算法 二分查找算法，也是一个较为常见的算法，因为算法的思想相对来说比较简单，并且效率相对来说较高。
+使用的最多的就是mysql了，在innodb存储引擎当中，叶子节点存储的数据页，在数据页当中查找行数据，是通过二分查找的方式。
+下面是对我自己对这个算法思想的提炼。……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/">阅读全文</a></p>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https://zzl578472734.github.io/post/golang%E5%A4%84%E7%90%86http%E8%AF%B7%E6%B1%82/" title="Golang处理http请求">Golang处理http请求</a>
+            </h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年6月21日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
+            
+        </div>
+        
+        <div class="post-content">
+            golang 是如何处理http请求？ go 建立一个标准的 http server……
+        </div>
+        <p class="readmore"><a href="https://zzl578472734.github.io/post/golang%E5%A4%84%E7%90%86http%E8%AF%B7%E6%B1%82/">阅读全文</a></p>
+    </article>
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">
                 <a href="https://zzl578472734.github.io/post/%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%BF%90%E7%AE%97/" title="二进制运算">二进制运算</a>
             </h1>
         </header>
@@ -102,7 +275,7 @@
             
             <span class="meta-category"><a href='/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F'>操作系统</a></span>
             
-            <span class="meta-category"><a href='/categories/kafaka'>kafaka</a></span>
+            <span class="meta-category"><a href='/categories/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97'>消息队列</a></span>
             
         </div>
         
@@ -136,182 +309,6 @@
         <p class="readmore"><a href="https://zzl578472734.github.io/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/">阅读全文</a></p>
     </article>
     
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/" title="Golang中的channel">Golang中的channel</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2021年5月14日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            channel 作为golang中用于goroutine之间的通讯的方式，经常会听到一句话，就是“不要通过共享内存来通信，而实通过通信来共享内存”。
-总结一下：golang 是怎么处理发送数据到channel中的，。
-今天就来好好聊一聊channel吧。……
-        </div>
-        <p class="readmore"><a href="https://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/">阅读全文</a></p>
-    </article>
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/" title="Golang实现snowflake算法">Golang实现snowflake算法</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2021年5月13日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            snowflake算法 雪花算法：一种分布式id生成算法规则,生成的分布式id规则上，随着时间的增加，不会出现重复。
-算法生成的格式
-0-00000000000000000000000000000000000000000-0000000000-000000000000
-分为4个部分……
-        </div>
-        <p class="readmore"><a href="https://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/">阅读全文</a></p>
-    </article>
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Golang 锁的实现">Golang 锁的实现</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2021年5月13日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            golang中，有一句话很是体现除了它的编程哲学，“不要用共享欸村来通信，而是通过通信来共享数据”。
-在多线程的世界里面，常常需要多个线程共同访问同一个内存代码或者变量，也就是一个临界区，为此，需要给临界区上锁操作。通过加锁，释放锁来调节进出的线程。 在golang中，较为提倡的方式是通过通道channel,来进行多个协程之间的数据通讯，当然，golang 也是内置了锁的支持操作，也可以实现多线程访问临界区的方式。
-// 内置锁的结构体 type Mutex struct { state int32 // 锁的状态 sema uint32 // 信号量 } // 定义了锁的接口，需要有加锁和解锁操作。 type Locker interface { Lock() Unlock() }  看锁定义的结构，可以看出，golang锁的实现也是基于信号量的，也即（二值信号量），信号量的值，非零既一。……
-        </div>
-        <p class="readmore"><a href="https://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/">阅读全文</a></p>
-    </article>
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%BA%8C-lru%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E7%AD%96%E7%95%A5/" title="Redis-LRU删除数据策略">Redis-LRU删除数据策略</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2021年5月8日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/redis'>redis</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            除了上一篇文章介绍的redis两种删除key的方式以外，针对内存已经占满的情况下，redis还有一种额外的方式，处理内存数据。
-1.内存相关的配置 在redis的配置文件当中，根内存相关的参数配置有下面的几个相关的参数信息
- maxmemory : 允许redis使用的最大内存数据,默认为0，表示不开启内存淘汰 maxmemory-policy ： 内存淘汰的策略.……
-        </div>
-        <p class="readmore"><a href="https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%BA%8C-lru%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E7%AD%96%E7%95%A5/">阅读全文</a></p>
-    </article>
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%B8%80-%E8%BF%87%E6%9C%9F%E9%94%AE%E7%AD%96%E7%95%A5/" title="Redis-过期键删除策略">Redis-过期键删除策略</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2021年5月7日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/redis'>redis</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            redis的键删除策略 在使用redis的时候，基本上会给指定的缓存设置过期时间，让缓存自动过期。
-总结了：
- 惰性删除。在查询的时候，如果key过期了，就进行删除操作。 定期删除。每经过一段时间，后台任务自动删除过期的数据。  1.……
-        </div>
-        <p class="readmore"><a href="https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%B8%80-%E8%BF%87%E6%9C%9F%E9%94%AE%E7%AD%96%E7%95%A5/">阅读全文</a></p>
-    </article>
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/" title="阅读uber的golang规范">阅读uber的golang规范</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2021年4月29日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            阅读uber的go规范，原文地址 https://github.com/uber-go/guide/blob/master/style.md
-下面是一些我根据自己实际情况总结出来的，建议查看原文，根据自己的情况，看看是否也出现了类似的情况
-1. 第一条规则，也是uber的第一条规则，特别提出来。 You almost never need a pointer to an interface.……
-        </div>
-        <p class="readmore"><a href="https://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/">阅读全文</a></p>
-    </article>
-    
-    <article class="post">
-        <header>
-            <h1 class="post-title">
-                <a href="https://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/" title="一个频率限制的变更,引发的血案">一个频率限制的变更,引发的血案</a>
-            </h1>
-        </header>
-        <date class="post-meta meta-date">
-            2021年4月28日
-        </date>
-        
-        <div class="post-meta">
-            <span>|</span>
-            
-            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
-            
-        </div>
-        
-        <div class="post-content">
-            对接过微信现金红包的同学应该知道，微信官方是有限制接口的调用频率的。
-重点说三遍。这块微信限制改成了 30/秒，30/秒，30/秒。
-由于，开发同学一般都不会有企业微信支付的商户号的相关权限，所以很难同步到商户号上面，微信推送过来的信息。2021年02月份左右，刚好是过年期间，业务上面调用了微信发放红包的接口。 但是频繁告警出现了……
-        </div>
-        <p class="readmore"><a href="https://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/">阅读全文</a></p>
-    </article>
-    
     
 
 
@@ -326,6 +323,10 @@
     
     <li >
         <a href="https://zzl578472734.github.io/page/2/">2</a>
+    </li>
+    
+    <li >
+        <a href="https://zzl578472734.github.io/page/3/">3</a>
     </li>
     
 
@@ -386,6 +387,34 @@
 <ul class="widget-list">
     
     <li>
+        <a href="https://zzl578472734.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BB%A4%E7%89%8C%E6%A1%B6/" title="分布式限流-分布式令牌桶">分布式限流-分布式令牌桶</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E5%8D%95%E6%9C%BA%E7%9A%84%E4%BB%A4%E7%89%8C%E6%A1%B6%E4%BD%BF%E7%94%A8/" title="分布式限流-单机的令牌桶使用">分布式限流-单机的令牌桶使用</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E4%BB%8E%E5%8D%95%E6%9C%BA%E4%BB%A4%E7%89%8C%E6%A1%B6%E5%BC%80%E5%A7%8B/" title="分布式限流-从接口访问开始说起">分布式限流-从接口访问开始说起</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/" title="算法-归并排序">算法-归并排序</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E8%B0%88%E8%B0%88%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B/" title="谈谈我认为的技术选型">谈谈我认为的技术选型</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" title="算法-二分查找">算法-二分查找</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/golang%E5%A4%84%E7%90%86http%E8%AF%B7%E6%B1%82/" title="Golang处理http请求">Golang处理http请求</a>
+    </li>
+    
+    <li>
         <a href="https://zzl578472734.github.io/post/%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%BF%90%E7%AE%97/" title="二进制运算">二进制运算</a>
     </li>
     
@@ -395,34 +424,6 @@
     
     <li>
         <a href="https://zzl578472734.github.io/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" title="Golang的垃圾回收">Golang的垃圾回收</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/golang%E4%B8%AD%E7%9A%84channel/" title="Golang中的channel">Golang中的channel</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/golang%E5%AE%9E%E7%8E%B0snowflake%E7%AE%97%E6%B3%95/" title="Golang实现snowflake算法">Golang实现snowflake算法</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/golang-%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0/" title="Golang 锁的实现">Golang 锁的实现</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%BA%8C-lru%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E7%AD%96%E7%95%A5/" title="Redis-LRU删除数据策略">Redis-LRU删除数据策略</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%B8%80-%E8%BF%87%E6%9C%9F%E9%94%AE%E7%AD%96%E7%95%A5/" title="Redis-过期键删除策略">Redis-过期键删除策略</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/%E9%98%85%E8%AF%BBuber%E7%9A%84golang%E8%A7%84%E8%8C%83/" title="阅读uber的golang规范">阅读uber的golang规范</a>
-    </li>
-    
-    <li>
-        <a href="https://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/" title="一个频率限制的变更,引发的血案">一个频率限制的变更,引发的血案</a>
     </li>
     
 </ul>
@@ -436,13 +437,21 @@
     
     <li><a href="https://zzl578472734.github.io/categories/golang/">golang (11)</a></li>
     
-    <li><a href="https://zzl578472734.github.io/categories/kafaka/">kafaka (1)</a></li>
-    
     <li><a href="https://zzl578472734.github.io/categories/redis/">redis (2)</a></li>
     
-    <li><a href="https://zzl578472734.github.io/categories/%E5%B0%8F%E8%AF%B4/">小说 (1)</a></li>
+    <li><a href="https://zzl578472734.github.io/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统 (3)</a></li>
     
     <li><a href="https://zzl578472734.github.io/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统 (2)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E6%9D%82%E8%B0%88/">杂谈 (1)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E6%9E%B6%E6%9E%84%E4%B9%8B%E9%81%93/">架构之道 (1)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列 (1)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E7%AC%94%E8%AE%B0/">笔记 (1)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E7%AE%97%E6%B3%95/">算法 (3)</a></li>
     
 </ul>
     </section>
@@ -455,9 +464,19 @@
     
     <a href="https://zzl578472734.github.io/tags/redis/">redis</a>
     
-    <a href="https://zzl578472734.github.io/tags/%E4%B8%9C%E9%87%8E%E5%9C%AD%E5%90%BE/">东野圭吾</a>
+    <a href="https://zzl578472734.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a>
     
     <a href="https://zzl578472734.github.io/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E6%9E%B6%E6%9E%84%E4%B9%8B%E9%81%93/">架构之道</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E7%AC%94%E8%AE%B0/">笔记</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E7%AE%97%E6%B3%95/">算法</a>
     
 </div>
     </section>

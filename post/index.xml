@@ -6,7 +6,80 @@
     <description>Recent content in Posts on Future blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 03 Jun 2021 15:49:08 +0800</lastBuildDate><atom:link href="https://zzl578472734.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 26 Jul 2021 09:55:22 +0800</lastBuildDate><atom:link href="https://zzl578472734.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>分布式限流-分布式令牌桶</title>
+      <link>https://zzl578472734.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BB%A4%E7%89%8C%E6%A1%B6/</link>
+      <pubDate>Mon, 26 Jul 2021 09:55:22 +0800</pubDate>
+      
+      <guid>https://zzl578472734.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BB%A4%E7%89%8C%E6%A1%B6/</guid>
+      <description>一。单体应用带来的问题？ 之前说到了单机令牌桶的使用，实现上面来说相对简单，但是实际项目开发的时候，考虑项目扩展，都会采用部署多个应用，比如部署多个web项目，或者将应拆分为多个微服务的方式进行部署。
+这就要求了，如何确保多个应用请求总和加起来不超过限制。</description>
+    </item>
+    
+    <item>
+      <title>分布式限流-单机的令牌桶使用</title>
+      <link>https://zzl578472734.github.io/post/%E5%8D%95%E6%9C%BA%E7%9A%84%E4%BB%A4%E7%89%8C%E6%A1%B6%E4%BD%BF%E7%94%A8/</link>
+      <pubDate>Wed, 21 Jul 2021 17:09:56 +0800</pubDate>
+      
+      <guid>https://zzl578472734.github.io/post/%E5%8D%95%E6%9C%BA%E7%9A%84%E4%BB%A4%E7%89%8C%E6%A1%B6%E4%BD%BF%E7%94%A8/</guid>
+      <description>一。在项目中使用令牌桶 根据上一篇文章《分布式限流-从接口访问开始说起》所述，为了控制接口的访问频率，我们采用限流算法来限制请求，根据发展的趋势和通用性，我们采用令牌桶来处理请求。
+首先我们会初始化一个令牌桶信息。
+我这边使用的是golang语言，在三方扩展包中，有golang.org/x/time/rate 直接支持了令牌桶.</description>
+    </item>
+    
+    <item>
+      <title>分布式限流-从接口访问开始说起</title>
+      <link>https://zzl578472734.github.io/post/%E4%BB%8E%E5%8D%95%E6%9C%BA%E4%BB%A4%E7%89%8C%E6%A1%B6%E5%BC%80%E5%A7%8B/</link>
+      <pubDate>Wed, 21 Jul 2021 14:18:46 +0800</pubDate>
+      
+      <guid>https://zzl578472734.github.io/post/%E4%BB%8E%E5%8D%95%E6%9C%BA%E4%BB%A4%E7%89%8C%E6%A1%B6%E5%BC%80%E5%A7%8B/</guid>
+      <description>一。从接口的访问开始说起 在接入一些第三方应用的时候，很多第三方应用，为了保证自身服务的稳定性和安全性，都会对请求来源机器做一些ip白名单处理，可以防范一些非法用户请求，但是，即使信任了白名单机器，对于自身系统，也还是可能因为白名单用户请求接口调用导致自身系统的不稳定，或者频繁调用一些重要的业务（转账，发钱等）。
+这些重要业务的调用，都伴随着严格的鉴权系统，并且还会增加一些访问次数的限制。
+1. 百度机器人对话接口 比如最近我在工作中，调用的百度机器人的对话聊天接口</description>
+    </item>
+    
+    <item>
+      <title>算法-归并排序</title>
+      <link>https://zzl578472734.github.io/post/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Tue, 13 Jul 2021 18:53:24 +0800</pubDate>
+      
+      <guid>https://zzl578472734.github.io/post/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/</guid>
+      <description>一直我都不是特别了解归并排序，或者没有太过去关注这个排序算法，导致对于它来说，感到陌生并且生疏，今天就抽空来整理一下这个排序算法的优点和特性。
+以一个简单的例子来看，给定一个数组 data = [8,4,5,7,1,3,6,2]</description>
+    </item>
+    
+    <item>
+      <title>谈谈我认为的技术选型</title>
+      <link>https://zzl578472734.github.io/post/%E8%B0%88%E8%B0%88%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B/</link>
+      <pubDate>Mon, 12 Jul 2021 13:47:06 +0800</pubDate>
+      
+      <guid>https://zzl578472734.github.io/post/%E8%B0%88%E8%B0%88%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B/</guid>
+      <description>再我过往做技术的这些年里面，类似这种指导性的文章，我是没有过多考虑的整理成文章内容的，但是随着工作年限的增加和这几年技术发展愈发的迅速，发现每一种技术都有它产生的道理，或者说是为了解决某一类的问题，并且相同的问题可能有多种技术或者软件的解决方案，
+比如你所熟悉的消息队列，就有activemq,rabbitmq,rocketmq,kafkal等等.
+如何在这么多可选方案中选择出最合适自己的最佳方案，就是“技术选型”。</description>
+    </item>
+    
+    <item>
+      <title>算法-二分查找</title>
+      <link>https://zzl578472734.github.io/post/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/</link>
+      <pubDate>Mon, 05 Jul 2021 09:56:30 +0800</pubDate>
+      
+      <guid>https://zzl578472734.github.io/post/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/</guid>
+      <description>1. 二分查找算法 二分查找算法，也是一个较为常见的算法，因为算法的思想相对来说比较简单，并且效率相对来说较高。
+使用的最多的就是mysql了，在innodb存储引擎当中，叶子节点存储的数据页，在数据页当中查找行数据，是通过二分查找的方式。
+下面是对我自己对这个算法思想的提炼。</description>
+    </item>
+    
+    <item>
+      <title>Golang处理http请求</title>
+      <link>https://zzl578472734.github.io/post/golang%E5%A4%84%E7%90%86http%E8%AF%B7%E6%B1%82/</link>
+      <pubDate>Mon, 21 Jun 2021 18:02:08 +0800</pubDate>
+      
+      <guid>https://zzl578472734.github.io/post/golang%E5%A4%84%E7%90%86http%E8%AF%B7%E6%B1%82/</guid>
+      <description>golang 是如何处理http请求？ go 建立一个标准的 http server</description>
+    </item>
+    
     <item>
       <title>二进制运算</title>
       <link>https://zzl578472734.github.io/post/%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%BF%90%E7%AE%97/</link>
@@ -72,6 +145,17 @@
     </item>
     
     <item>
+      <title>算法-快速排序</title>
+      <link>https://zzl578472734.github.io/post/%E7%AE%97%E6%B3%95-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Mon, 10 May 2021 15:05:57 +0800</pubDate>
+      
+      <guid>https://zzl578472734.github.io/post/%E7%AE%97%E6%B3%95-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</guid>
+      <description>最近再看算法中的分治思想，简单的理解就是，分而治之，比如这次学习的快排，就是将一个大的数组，分为一个基准值，和一个小于基准值的数组和一个大于基准值的数组。
+然后再次对两个数组，进行相同的快速排序，直至所有的数组达到算法的临界条件，排序结束.
+一。 快排的注意点  对比基准元素的选择。 数组的长度小于等于 1 的临界条件判断。  二。分析一下排序的流程 比如给定一个数组</description>
+    </item>
+    
+    <item>
       <title>Redis-LRU删除数据策略</title>
       <link>https://zzl578472734.github.io/post/redis%E7%B3%BB%E5%88%97%E4%BA%8C-lru%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E7%AD%96%E7%95%A5/</link>
       <pubDate>Sat, 08 May 2021 09:36:06 +0800</pubDate>
@@ -111,8 +195,7 @@
       
       <guid>https://zzl578472734.github.io/post/%E4%B8%80%E4%B8%AA%E9%A2%91%E7%8E%87%E9%99%90%E5%88%B6%E7%9A%84%E5%8F%98%E6%9B%B4%E5%BC%95%E5%8F%91%E7%9A%84%E8%A1%80%E6%A1%88/</guid>
       <description>对接过微信现金红包的同学应该知道，微信官方是有限制接口的调用频率的。
-重点说三遍。这块微信限制改成了 30/秒，30/秒，30/秒。
-由于，开发同学一般都不会有企业微信支付的商户号的相关权限，所以很难同步到商户号上面，微信推送过来的信息。2021年02月份左右，刚好是过年期间，业务上面调用了微信发放红包的接口。 但是频繁告警出现了</description>
+重点说三遍。这块微信限制改成了 30/秒，30/秒，30/秒。</description>
     </item>
     
     <item>
@@ -157,8 +240,7 @@ fatal error: concurrent map read and map write  2.</description>
       <guid>https://zzl578472734.github.io/post/%E4%B8%80%E6%9C%B5%E9%BB%84%E8%89%B2%E7%9A%84%E7%89%B5%E7%89%9B%E8%8A%B1/</guid>
       <description>你见过黄色的牵牛花吗？
 这是一个不能触及的问题，因为它带来的是一连串的灾运，从50年前的持刀杀人犯为开端铺垫引起的一系列的故事。
-苍太从小就感受到父亲真嗣和哥哥要介的冷落。
-花会认识的女孩子孝美，再上了初中后，突然消失，断了联系。</description>
+苍太从小就感受到父亲真嗣和哥哥要介的冷落。</description>
     </item>
     
     <item>
@@ -179,17 +261,6 @@ type errorString struct { s string }  内置一个错误信息的接口提，通
       <guid>https://zzl578472734.github.io/post/golang%E7%9A%84log%E5%8C%85/</guid>
       <description>log包 1. 主要的包内结构体定义 标准包定义的结构体信息
 type Logger struct { // 原子锁 mu sync.</description>
-    </item>
-    
-    <item>
-      <title>消息中间件-rabbitMq</title>
-      <link>https://zzl578472734.github.io/post/rabbitmq/</link>
-      <pubDate>Mon, 10 Aug 2020 19:26:57 +0800</pubDate>
-      
-      <guid>https://zzl578472734.github.io/post/rabbitmq/</guid>
-      <description>为什么使用队列，也是老生常谈的问题了，异步，削峰，解耦。 由于最近一直在看rabbitMq相关的内容，加上工作中，也是采用的rabbitMq作为消息中间件的，在闲暇之余写下了这篇文章，也是对最近学习的一次总结。
-谈及rabbitMq，那就要先说到AMQP协议了，简单的说来，AMQP就是一套消息通讯协议的标准。比如早期的ActiveMq,和现在rabbitMq。
-先说下为什么选型的时候用的rabbitMq? 当然，这个基于下面三点考虑，</description>
     </item>
     
   </channel>
