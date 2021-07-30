@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>算法 on Future blog</title>
+    <link>https://zzl578472734.github.io/categories/%E7%AE%97%E6%B3%95/</link>
+    <description>Recent content in 算法 on Future blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Tue, 13 Jul 2021 18:53:24 +0800</lastBuildDate><atom:link href="https://zzl578472734.github.io/categories/%E7%AE%97%E6%B3%95/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>算法-归并排序</title>
+      <link>https://zzl578472734.github.io/post/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Tue, 13 Jul 2021 18:53:24 +0800</pubDate>
+      
+      <guid>https://zzl578472734.github.io/post/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/</guid>
+      <description>一直我都不是特别了解归并排序，或者没有太过去关注这个排序算法，导致对于它来说，感到陌生并且生疏，今天就抽空来整理一下这个排序算法的优点和特性。
+以一个简单的例子来看，给定一个数组 data = [8,4,5,7,1,3,6,2]</description>
+    </item>
+    
+    <item>
+      <title>算法-二分查找</title>
+      <link>https://zzl578472734.github.io/post/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/</link>
+      <pubDate>Mon, 05 Jul 2021 09:56:30 +0800</pubDate>
+      
+      <guid>https://zzl578472734.github.io/post/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/</guid>
+      <description>1. 二分查找算法 二分查找算法，也是一个较为常见的算法，因为算法的思想相对来说比较简单，并且效率相对来说较高。
+使用的最多的就是mysql了，在innodb存储引擎当中，叶子节点存储的数据页，在数据页当中查找行数据，是通过二分查找的方式。
+下面是对我自己对这个算法思想的提炼。</description>
+    </item>
+    
+    <item>
+      <title>算法-快速排序</title>
+      <link>https://zzl578472734.github.io/post/%E7%AE%97%E6%B3%95-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Mon, 10 May 2021 15:05:57 +0800</pubDate>
+      
+      <guid>https://zzl578472734.github.io/post/%E7%AE%97%E6%B3%95-%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</guid>
+      <description>最近再看算法中的分治思想，简单的理解就是，分而治之，比如这次学习的快排，就是将一个大的数组，分为一个基准值，和一个小于基准值的数组和一个大于基准值的数组。
+然后再次对两个数组，进行相同的快速排序，直至所有的数组达到算法的临界条件，排序结束.
+一。 快排的注意点  对比基准元素的选择。 数组的长度小于等于 1 的临界条件判断。  二。分析一下排序的流程 比如给定一个数组</description>
+    </item>
+    
+  </channel>
+</rss>

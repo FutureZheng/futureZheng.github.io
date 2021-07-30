@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+    <title>Golang的Log包 | Future blog</title>
+    <meta property="og:title" content="Golang的Log包 - Future blog">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2020-12-09T20:46:41&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2020-12-09T20:46:41&#43;08:00'>
+        
+    <meta name="Keywords" content="">
+    <meta name="description" content="Golang的Log包">
+        
+    <meta name="author" content="">
+    <meta property="og:url" content="https://zzl578472734.github.io/post/golang%E7%9A%84log%E5%8C%85/">
+    <link rel="shortcut icon" href='/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/css/normalize.css'>
+    <link rel="stylesheet" href='/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+        <link href="https://cdn.bootcdn.net/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" rel="stylesheet">
+    
+    
+    
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="https://zzl578472734.github.io/">
+                        Future blog
+                    </a>
+                
+                
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="https://zzl578472734.github.io/">首页</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    
+    <article class="post">
+        <header>
+            <h1 class="post-title">Golang的Log包</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2020年12月9日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/categories/golang'>golang</a></span>
+            
+        </div>
+        
+        
+        
+        <div class="post-content">
+            <h1 id="log包">log包</h1>
+<h3 id="1-主要的包内结构体定义">1. 主要的包内结构体定义</h3>
+<!-- raw HTML omitted -->
+<p>标准包定义的结构体信息</p>
+<pre><code>type Logger struct {
+    // 原子锁
+    mu     sync.Mutex // ensures atomic writes; protects the following fields
+    prefix string     // prefix to write at beginning of each line
+    flag   int        // properties
+    out    io.Writer  // destination for output
+    buf    []byte     // for accumulating text to write
+}
+</code></pre>
+<p>当前结构体包含了几个信息</p>
+<ul>
+<li>mu: 包内置的锁，针对一些常见设置操作，保证原子性。</li>
+<li>prefix：字段前缀，用于在写入日志前，加一个字段前缀信息。</li>
+<li>flag: 包内置了一些常用的时间输出格式，flag用来标识时间格式展示的类型.</li>
+<li>out: 输出设备信息。</li>
+<li>buf: 用于写入文件的日志内容信息。</li>
+</ul>
+<h3 id="2-包内初始化的方法">2. 包内初始化的方法</h3>
+<p>包内初始化方法</p>
+<pre><code>func New(out io.Writer, prefix string, flag int) *Logger {
+    return &amp;Logger{out: out, prefix: prefix, flag: flag}
+}
+</code></pre>
+<h3 id="3-包内置了一个开箱即用的标准log结构">3. 包内置了一个开箱即用的标准log结构</h3>
+<p>初始化方法</p>
+<pre><code>var std = New(os.Stderr, &quot;&quot;, LstdFlags)
+</code></pre>
+<p>说明: LstdFlags为标准包内置定义的一种日志输出前缀格式，即时间 2006-01-02 15:04:05</p>
+<p>常见的错误信息记录demo</p>
+<pre><code>func Print(v ...interface{}) {
+    std.Output(2, fmt.Sprint(v...))
+}
+</code></pre>
+<p>包内锁的使用</p>
+<pre><code>func SetOutput(w io.Writer) {
+    std.mu.Lock()
+    defer std.mu.Unlock()
+    std.out = w
+}
+</code></pre>
+<h3 id="4-log包使用">4. log包使用</h3>
+<p>main包调用</p>
+<pre><code>package main
+
+import &quot;log&quot;
+
+func main() {
+    log.Println(&quot;message&quot;)
+}
+</code></pre>
+<p>输出展示</p>
+<pre><code>E:\goproject\study&gt;go run main.go
+2020/11/06 20:34:34 message
+</code></pre>
+
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="https://zzl578472734.github.io/">Future blog</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="https://zzl578472734.github.io/post/golang%E7%9A%84log%E5%8C%85/">https://zzl578472734.github.io/post/golang%E7%9A%84log%E5%8C%85/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/tags/golang'>golang</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="https://zzl578472734.github.io/">Future blog By </a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script><script src="https://cdn.bootcdn.net/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+
+
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='//www.google.com/search' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="https://zzl578472734.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BB%A4%E7%89%8C%E6%A1%B6/" title="分布式限流-分布式令牌桶">分布式限流-分布式令牌桶</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E5%8D%95%E6%9C%BA%E7%9A%84%E4%BB%A4%E7%89%8C%E6%A1%B6%E4%BD%BF%E7%94%A8/" title="分布式限流-单机的令牌桶使用">分布式限流-单机的令牌桶使用</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E4%BB%8E%E5%8D%95%E6%9C%BA%E4%BB%A4%E7%89%8C%E6%A1%B6%E5%BC%80%E5%A7%8B/" title="分布式限流-从接口访问开始说起">分布式限流-从接口访问开始说起</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F/" title="算法-归并排序">算法-归并排序</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E8%B0%88%E8%B0%88%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B/" title="谈谈我认为的技术选型">谈谈我认为的技术选型</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" title="算法-二分查找">算法-二分查找</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/golang%E5%A4%84%E7%90%86http%E8%AF%B7%E6%B1%82/" title="Golang处理http请求">Golang处理http请求</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E4%BA%8C%E8%BF%9B%E5%88%B6%E8%BF%90%E7%AE%97/" title="二进制运算">二进制运算</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/%E9%9B%B6copy%E6%8A%80%E6%9C%AF/" title="零拷贝技术">零拷贝技术</a>
+    </li>
+    
+    <li>
+        <a href="https://zzl578472734.github.io/post/golang%E7%9A%84%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/" title="Golang的垃圾回收">Golang的垃圾回收</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="https://zzl578472734.github.io/categories/golang/">golang (11)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/redis/">redis (2)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统 (3)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统 (2)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E6%9D%82%E8%B0%88/">杂谈 (1)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E6%9E%B6%E6%9E%84%E4%B9%8B%E9%81%93/">架构之道 (1)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列 (1)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E7%AC%94%E8%AE%B0/">笔记 (1)</a></li>
+    
+    <li><a href="https://zzl578472734.github.io/categories/%E7%AE%97%E6%B3%95/">算法 (3)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="https://zzl578472734.github.io/tags/golang/">golang</a>
+    
+    <a href="https://zzl578472734.github.io/tags/redis/">redis</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/">操作系统</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E6%9E%B6%E6%9E%84%E4%B9%8B%E9%81%93/">架构之道</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/">消息队列</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E7%AC%94%E8%AE%B0/">笔记</a>
+    
+    <a href="https://zzl578472734.github.io/tags/%E7%AE%97%E6%B3%95/">算法</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="https://zzl578472734.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
